@@ -3,6 +3,8 @@ import { Cinzel, Source_Serif_4 } from "next/font/google";
 import "./globals.css";
 
 import Footer from "@/components/Footer";
+import Navbar from "@/components/Navbar";
+
 
 /* ---------- Fonts ---------- */
 
@@ -38,7 +40,10 @@ export default function RootLayout({
       <body
         className={`${cinzel.variable} ${sourceSerif.variable} antialiased min-h-screen flex flex-col`}
       >
+        <Navbar /> 
+
         <main className="flex-grow">{children}</main>
+        
         <Footer />
       </body>
     </html>
