@@ -12,7 +12,7 @@ export default function Navbar() {
         {/* LOGO */}
         <Link href="#" className="flex items-center">
           <Image
-            src="/images/basho_logo.jpg"
+            src="/image_aish/basho_logo.jpg"
             alt="Basho by Shivangi"
             width={140}
             height={40}
@@ -26,8 +26,8 @@ export default function Navbar() {
           {/* NAV LINKS */}
           <nav className="flex items-center gap-8 text-sm tracking-widest uppercase text-[#652810]">
 
-            <Link href="#" className="hover:text-[var(--basho-muted)]">Shop</Link>
-            <Link href="#" className="hover:text-[var(--basho-muted)]">Workshops</Link>
+            <Link href="/shop" className="hover:text-[var(--basho-muted)]">Shop</Link>
+            <Link href="/workshops" className="hover:text-[var(--basho-muted)]">Workshops</Link>
             <Link href="#" className="hover:text-[var(--basho-muted)]">Experiences</Link>
             <Link href="#" className="hover:text-[var(--basho-muted)]">Studio</Link>
             <Link href="#" className="hover:text-[var(--basho-muted)]">Gallery</Link>
