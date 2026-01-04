@@ -584,7 +584,7 @@ export default function WorkshopDetailPage() {
                     value={formData.fullName}
                     onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                     placeholder="Enter your full name"
-                    className="w-full px-4 py-3 border-2 border-[#E5E5E5] rounded-sm focus:border-[#8B6F47] focus:outline-none transition-colors placeholder:text-[#333]"
+                    className="w-full px-4 py-3 border-2 text-[#666] border-[#E5E5E5] rounded-sm focus:border-[#8B6F47] focus:outline-none transition-colors placeholder:text-[#333]"
 
                   />
                 </div>
@@ -598,7 +598,7 @@ export default function WorkshopDetailPage() {
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     placeholder="your@email.com"
-                    className="w-full px-4 py-3 border-2 border-[#E5E5E5] rounded-sm focus:border-[#8B6F47] focus:outline-none transition-colors placeholder:text-[#333]"
+                    className="w-full px-4 py-3 border-2 text-[#666] border-[#E5E5E5] rounded-sm focus:border-[#8B6F47] focus:outline-none transition-colors placeholder:text-[#333]"
 
                   />
                 </div>
@@ -612,7 +612,7 @@ export default function WorkshopDetailPage() {
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                     placeholder="+91 xxxxxxxxxx"
-                    className="w-full px-4 py-3 border-2 border-[#E5E5E5] rounded-sm focus:border-[#8B6F47] focus:outline-none transition-colors placeholder:text-[#333]"
+                    className="w-full px-4 py-3 border-2 text-[#666] border-[#E5E5E5] rounded-sm focus:border-[#8B6F47] focus:outline-none transition-colors placeholder:text-[#333]"
 
                   />
                 </div>
@@ -678,7 +678,7 @@ export default function WorkshopDetailPage() {
       </h2>
 
       {/* Participants */}
-      <div className="mb-6">
+      <div className="mb-6 ">
         <label className="block text-sm uppercase tracking-widest text-[#666] mb-2">
           Number of Participants
         </label>
@@ -690,7 +690,7 @@ export default function WorkshopDetailPage() {
               participants: Number(e.target.value),
             })
           }
-          className="w-full px-4 py-3 border-2 border-[#E5E5E5] rounded-sm focus:border-[#8B6F47] focus:outline-none"
+          className="w-full px-4 text-[#666] py-3 border-2 border-[#E5E5E5] rounded-sm focus:border-[#8B6F47] focus:outline-none"
         >
           {Array.from(
             { length: workshop.participants.max },
@@ -741,7 +741,7 @@ export default function WorkshopDetailPage() {
           }
           rows={4}
           placeholder="Any dietary requirements, accessibility needs, or special requests..."
-          className="w-full px-4 py-3 border-2 border-[#E5E5E5] rounded-sm focus:border-[#8B6F47] focus:outline-none resize-none placeholder:text-[#333]"
+          className="w-full px-4 py-3 text-[#666] border-2 border-[#E5E5E5] rounded-sm focus:border-[#8B6F47] focus:outline-none resize-none placeholder:text-[#333]"
 
            />
           </div>

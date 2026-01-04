@@ -237,12 +237,6 @@ export default function ProductDetailPage() {
             ✅ Item added to cart successfully
               </div>
             )}
-
-              {product.isCustomizable && (
-                <button className="w-full border-2 border-[#8B6F47] text-[#8B6F47] py-4 rounded-sm font-medium hover:bg-[#FAF8F5] transition-colors uppercase tracking-wide">
-                  Customize This Piece
-                </button>
-              )}
             </div>
 
             {/* Features Icons */}

@@ -106,7 +106,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
                     </p>
 
                     <div className="flex justify-between items-center">
-                      <div className="flex border-2 border-[#E5E5E5]">
+                      <div className="flex border-2 border-[#272222] text-[#272222]">
                         <button
                           onClick={() =>
                             updateQuantity(
@@ -161,7 +161,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
         {/* Footer */}
         {cartItems.length > 0 && (
           <div className="border-t border-[#E5E5E5] p-6 bg-white">
-            <div className="flex justify-between mb-4">
+            <div className="flex text-[#666] justify-between mb-4">
               <span>Subtotal</span>
               <span className="font-semibold">
                 {formatPrice(getCartTotal())}

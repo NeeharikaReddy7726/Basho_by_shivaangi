@@ -45,7 +45,7 @@ export default function CartPage() {
               />
             </svg>
             <h2 className="text-2xl font-serif text-[#2C2C2C] mb-4">Your cart is empty</h2>
-            <p className="text-[#666] mb-8">Start adding some beautiful pottery pieces to your cart!</p>
+            <p className="text-[#563a13] mb-8">Start adding some beautiful pottery pieces to your cart!</p>
             <Link
               href="/shop"
               className="inline-block bg-[#8B6F47] text-white px-8 py-3 rounded-sm font-medium hover:bg-[#6D5836] transition-colors uppercase tracking-wide"
@@ -61,11 +61,12 @@ export default function CartPage() {
               {cartItems.map((item) => (
                 <div 
                   key={`${item.product.id}-${item.selectedColor.code}`}
-                  className="bg-white rounded-sm shadow-sm p-6"
+                  className="bg-white rounded-sm shadow-md border border-[#E5E5E5] p-6"
+
                 >
                   <div className="flex gap-6">
                     {/* Product Image */}
-                    <div className="relative w-32 h-32 bg-[#E8DFD0] rounded-sm overflow-hidden flex-shrink-0">
+                    <div className="relative w-32 h-32 bg-[#E8DFD0] rounded-sm overflow-hidden shrink-0">
                       <Image
                         src={item.product.images[0]}
                         alt={item.product.name}
@@ -81,10 +82,10 @@ export default function CartPage() {
                           <h3 className="text-xl font-medium text-[#2C2C2C] mb-1">
                             {item.product.name}
                           </h3>
-                          <p className="text-sm text-[#666] mb-1">
+                          <p className="text-sm text-[#563a13] mb-1">
                             Glaze: <span className="font-medium">{item.selectedColor.name}</span>
                           </p>
-                          <p className="text-sm text-[#666]">
+                          <p className="text-sm text-[#563a13]">
                             Category: {item.product.category}
                           </p>
                         </div>
@@ -104,33 +105,36 @@ export default function CartPage() {
                       {/* Price and Quantity */}
                       <div className="flex items-center justify-between mt-6">
                         {/* Quantity Controls */}
-                        <div className="flex items-center border-2 border-[#E5E5E5] rounded-sm">
-                          <button
-                            onClick={() => updateQuantity(item.product.id, item.selectedColor.code, item.quantity - 1)}
-                            className="px-4 py-2 text-[#8B6F47] hover:bg-[#F5F5DC] transition-colors text-lg"
-                            aria-label="Decrease quantity"
-                          >
-                            −
-                          </button>
-                          <span className="px-6 py-2 text-[#2C2C2C] font-medium border-x-2 border-[#E5E5E5] min-w-[60px] text-center">
-                            {item.quantity}
-                          </span>
-                          <button
-                            onClick={() => updateQuantity(item.product.id, item.selectedColor.code, item.quantity + 1)}
-                            disabled={item.quantity >= item.product.stock}
-                            className="px-4 py-2 text-[#8B6F47] hover:bg-[#F5F5DC] transition-colors text-lg disabled:opacity-30 disabled:cursor-not-allowed"
-                            aria-label="Increase quantity"
-                          >
-                            +
-                          </button>
-                        </div>
+                        <div className="flex items-center border-2 border-[#563a13] rounded-sm bg-white">
+                          <button onClick={() =>
+                                    updateQuantity(item.product.id, item.selectedColor.code, item.quantity - 1)
+                          }
+                                className="px-4 py-2 text-[#563a13] hover:bg-[#F1ECE3] transition-colors text-lg"
+                    >
+                     −
+                        </button>
+
+                      <span className="px-6 py-2 text-[#2C2C2C] font-semibold border-x border-[#563a13]/30 min-w-[56px] text-center">
+                          {item.quantity}
+                        </span>
+
+                      <button
+                onClick={() =>
+                    updateQuantity(item.product.id, item.selectedColor.code, item.quantity + 1)
+                  }
+                    disabled={item.quantity >= item.product.stock}
+                  className="px-4 py-2 text-[#563a13] hover:bg-[#F1ECE3] transition-colors text-lg disabled:opacity-40">
+                  +
+                </button>
+              </div>
+
 
                         {/* Price */}
                         <div className="text-right">
-                          <p className="text-2xl font-semibold text-[#8B6F47]">
+                          <p className="text-2xl font-semibold text-[#563a13]">
                             {formatPrice(item.product.price * item.quantity)}
                           </p>
-                          <p className="text-sm text-[#666]">
+                          <p className="text-sm text-[#563a13]">
                             {formatPrice(item.product.price)} each
                           </p>
                         </div>
@@ -166,12 +170,12 @@ export default function CartPage() {
 
                 {/* Summary Details */}
                 <div className="space-y-3 mb-6 pb-6 border-b border-[#E5E5E5]">
-                  <div className="flex justify-between text-[#666]">
+                  <div className="flex justify-between text-[#563a13]">
                     <span>Subtotal ({cartCount} items)</span>
                     <span className="text-[#2C2C2C] font-medium">{formatPrice(subtotal)}</span>
                   </div>
                   
-                  <div className="flex justify-between text-[#666]">
+                  <div className="flex justify-between text-[#563a13]">
                     <span>Shipping</span>
                     <span className="text-[#2C2C2C] font-medium">
                       {shipping === 0 ? (
@@ -183,12 +187,12 @@ export default function CartPage() {
                   </div>
 
                   {subtotal < 3000 && (
-                    <p className="text-xs text-[#666] bg-[#F5F5DC] p-2 rounded">
+                    <p className="text-xs text-[#563a13] bg-[#F5F5DC] p-2 rounded">
                       Add {formatPrice(3000 - subtotal)} more for free shipping
                     </p>
                   )}
 
-                  <div className="flex justify-between text-[#666]">
+                  <div className="flex justify-between text-[#563a13]">
                     <span>GST (18%)</span>
                     <span className="text-[#2C2C2C] font-medium">{formatPrice(gst)}</span>
                   </div>
@@ -209,7 +213,7 @@ export default function CartPage() {
                 </Link>
 
                 {/* Security Icons */}
-                <div className="space-y-3 text-xs text-[#666] pt-4 border-t border-[#E5E5E5]">
+                <div className="space-y-3 text-xs text-[#563a13] pt-4 border-t border-[#E5E5E5]">
                   <div className="flex items-center gap-2">
                     <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
