@@ -1,1 +1,13 @@
 .DS_Store
+# virtual env
+venv/
+
+# env variables
+.env
+
+# python cache
+__pycache__/
+*.pyc
+
+# media
+media/
