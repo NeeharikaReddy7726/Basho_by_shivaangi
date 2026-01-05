@@ -42,15 +42,6 @@ export default function Navbar() {
             <Link href="/corporate" className="hover:text-[var(--basho-muted)]">CORPORATE</Link>
 
 
-            
-            <Link href="/shop" className="hover:text-[var(--basho-muted)]">SHOP</Link>
-            <Link href="/workshops" className="hover:text-[var(--basho-muted)]">WORKSHOPS</Link>
-            <Link href="/experiences" className="hover:text-[var(--basho-muted)]">EXPERIENCES</Link>
-            <Link href="/studio" className="hover:text-[var(--basho-muted)]">STUDIO</Link>
-            <Link href="/gallery" className="hover:text-[var(--basho-muted)]">GALLERY</Link>
-            <Link href="/about" className="hover:text-[var(--basho-muted)]">ABOUT US</Link>
-            <Link href="/corporate" className="hover:text-[var(--basho-muted)]">CORPORATE</Link>
-
             </nav>
 
 
