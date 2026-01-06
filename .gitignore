@@ -1,13 +1,26 @@
+# OS files
 .DS_Store
-# virtual env
+
+# Python virtual environment
 venv/
 
-# env variables
+# Environment variables
 .env
 
-# python cache
+# Python cache
 __pycache__/
 *.pyc
 
-# media
+# Django
+db.sqlite3
 media/
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
