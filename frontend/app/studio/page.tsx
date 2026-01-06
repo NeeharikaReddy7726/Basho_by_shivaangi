@@ -2,6 +2,8 @@
 
 import styles from "./Studio.module.css";
 import { useState } from "react";
+import { motion } from "framer-motion";
+import Image from "next/image";
 
 export default function StudioPage() {
   const [isOpen, setIsOpen] = useState(false);
@@ -20,35 +22,76 @@ export default function StudioPage() {
    <main className={`${styles.page} ${styles.pageEnter}`}>
 
 
-      {/* HERO */}
-<section className={styles.hero}>
-  <div className={styles.heroOverlay} />
-  <div className={styles.heroContent}>
-    <h1 className={styles.heroTitle}>OUR STUDIO</h1>
-    <p className={styles.heroSubtitle}>
-      Where earth meets art — visit our creative sanctuary
-    </p>
-  </div>
-</section>
+     
+{/* Hero */}
+      <section className="relative h-[60vh] flex items-center justify-center text-center overflow-hidden">
+        {/* Background Image Motion */}
+        <motion.div
+          initial={{ scale: 1.15, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 1.2, ease: "easeOut" }}
+          className="absolute inset-0"
+        >
+          <Image
+            src="/images/workshop-pieces/18.png"
+            alt="Corporate pottery"
+            fill
+            priority
+            className="object-cover"
+          />
+        </motion.div>
 
+        {/* Dark Overlay */}
+        <div className="absolute inset-0 bg-black/40" />
+
+        {/* Text Content */}
+        <div className="relative z-10 text-white px-6">
+          {/* Heading */}
+          <motion.h1
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
+            className="text-4xl md:text-5xl font-semibold mb-4"
+          >
+            OUR STUDIO
+          </motion.h1>
+
+          {/* Subtitle */}
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.5 }}
+            className="max-w-xl mx-auto text-white/80"
+          >
+            Where earth meets art — visit our creative sanctuary
+          </motion.p>
+        </div>
+      </section>
 
       {/* LOCATION */}
       <section className={styles.section}>
         <div className={styles.grid}>
 
           {/* Map */}
-          <a
-  href="https://www.google.com/maps/place/21%C2%B007'48.0%22N+72%C2%B043'26.4%22E/@21.1299866,72.7214146,17z"
-  target="_blank"
-  rel="noopener noreferrer"
-  className={styles.mapCard}
->
+<div className={styles.mapCard}>
   <iframe
-    src="https://maps.google.com/maps?q=21.1299866,72.7239895&z=17&output=embed"
+    src="https://www.google.com/maps?q=21.1299866,72.7239895&z=17&output=embed"
     loading="lazy"
     referrerPolicy="no-referrer-when-downgrade"
+    allowFullScreen
   ></iframe>
-</a>
+
+  {/* Open in Google Maps */}
+  <a
+    href="https://www.google.com/maps/place/21%C2%B007'48.0%22N+72%C2%B043'26.4%22E"
+    target="_blank"
+    rel="noopener noreferrer"
+    className={styles.openMap}
+  >
+    Open in Google Maps
+  </a>
+</div>
+
 
 
           {/* Details */}
