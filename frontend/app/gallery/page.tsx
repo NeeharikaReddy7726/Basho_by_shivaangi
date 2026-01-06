@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import { useMemo } from "react";
 import { useRef } from "react";
-
+import Image from "next/image";
 
 
 
@@ -165,9 +165,8 @@ const filteredImages =
      {/* =====================================================
     SECTION 1 — PAGE HEADER (WITH BACKGROUND IMAGE)
 ===================================================== */}
-<section className="relative h-[40vh] flex items-center justify-center text-center overflow-hidden">
+{/* <section className="relative h-[40vh] flex items-center justify-center text-center overflow-hidden">
 
-  {/* 🔽 ADD BACKGROUND IMAGE PATH HERE LATER */}
     <img
     src="/image_aish/home/home_pot.jpg"
     alt="Gallery background"
@@ -175,7 +174,7 @@ const filteredImages =
   />
 
 
-  {/* Dark overlay for readability */}
+ 
   <div className="absolute inset-0 bg-gradient-to-b from-[#7f8f7a]/70 via-[#7f8f7a]/40 to-black/70" />
 
 
@@ -187,7 +186,50 @@ const filteredImages =
       A visual journey through our artisanal world
     </p>
   </div>
-</section>
+</section> */}
+ <section className="relative h-[60vh] -mt-20 flex items-center justify-center text-center overflow-hidden">
+        {/* Background Image Motion */}
+        <motion.div
+          initial={{ scale: 1.15, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 1.2, ease: "easeOut" }}
+          className="absolute inset-0"
+        >
+          <Image
+            src="/image_aish/home/home_pot.jpg"
+            alt="Corporate pottery"
+            fill
+            priority
+            className="object-cover"
+          />
+        </motion.div>
+
+        {/* Dark Overlay */}
+        <div className="absolute inset-0 bg-black/40" />
+
+        {/* Text Content */}
+        <div className="relative z-10 text-white px-6">
+          {/* Heading */}
+          <motion.h1
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
+            className="text-4xl md:text-5xl font-semibold mb-4"
+          >
+            Gallery
+          </motion.h1>
+
+          {/* Subtitle */}
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.5 }}
+            className="max-w-xl mx-auto text-white/80"
+          >
+            A visual journey through our artisanal world
+          </motion.p>
+        </div>
+      </section>
 
 
       {/* =====================================================

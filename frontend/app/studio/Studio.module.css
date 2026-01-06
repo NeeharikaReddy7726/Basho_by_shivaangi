@@ -10,7 +10,7 @@
   padding: 7rem 2rem;
   text-align: center;
 
-  background-image: url("/Images/products/25.png");
+  background-image: url("/Images/workshop-pieces/18.png");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -34,14 +34,14 @@
   font-size: clamp(3rem, 6vw, 4rem);
   margin-bottom: 1rem;
 
-  color: var(--basho-dark);
+  color: white;
   letter-spacing: 0.15em;
   text-transform: uppercase;
   font-weight: 500;
 }
 
 .heroSubtitle {
-  color: var(--basho-dark);
+  color: white/80;
   font-size: 1.1rem;
   line-height: 1.6;
 }
