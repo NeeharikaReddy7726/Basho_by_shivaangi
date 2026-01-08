@@ -4,6 +4,7 @@ import { useState } from "react";
 import styles from "./ExperienceSection.module.css";
 
 interface Props {
+  experienceId: number; // ✅ added
   title: string;
   tagline: string;
   description: string;
@@ -16,6 +17,7 @@ interface Props {
 }
 
 export default function ExperienceSection({
+  experienceId,
   title,
   tagline,
   description,
@@ -27,6 +29,44 @@ export default function ExperienceSection({
   reverse = false,
 }: Props) {
   const [open, setOpen] = useState(false);
+
+  // ✅ form state
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [date, setDate] = useState("");
+
+  // ✅ submit handler (THIS is where fetch goes)
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      const res = await fetch(
+        "http://localhost:8000/api/experiences/book/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            experience: experienceId,
+            full_name: name,
+            phone: phone,
+            email: email,
+            booking_date: date,
+            number_of_people: 2,
+          }),
+        }
+      );
+
+      if (!res.ok) throw new Error("Booking failed");
+
+    alert("Booking successful 🎉");
+    setOpen(false);
+  } catch (err) {
+    alert("Booking failed ❌");
+  }
+  };
 
   return (
     <>
@@ -78,19 +118,40 @@ export default function ExperienceSection({
 
             <h3 className={styles.modalTitle}>Book Your Experience</h3>
 
-            <form className={styles.form}>
-              <input type="text" placeholder="Full Name" required />
-              <input type="tel" placeholder="Phone Number" required />
-              <input type="email" placeholder="Email Address" required />
+            <form className={styles.form} onSubmit={handleSubmit}>
+              <input
+                type="text"
+                placeholder="Full Name"
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
 
-              <input type="date" required />
+              <input
+                type="tel"
+                placeholder="Phone Number"
+                required
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+              />
 
-              <select defaultValue={title}>
-                <option>Couple’s Pottery Date</option>
-                <option>Birthday Celebrations</option>
-                <option>Farm & Garden Mini Parties</option>
-                <option>Studio-Based Experiences</option>
-              </select>
+              <input
+                type="email"
+                placeholder="Email Address"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+
+              <input
+                type="date"
+                required
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+              />
+
+              {/* Experience already known */}
+              <input type="text" value={title} disabled />
 
               <button type="submit" className={styles.submit}>
                 Confirm Booking
@@ -102,4 +163,3 @@ export default function ExperienceSection({
     </>
   );
 }
-
