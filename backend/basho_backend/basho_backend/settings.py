@@ -186,4 +186,3 @@ USE_TZ = True
  
 
 DEFAULT_FROM_EMAIL = "Basho by Shivangi <bashobyshivangi123@gmail.com>"
-
