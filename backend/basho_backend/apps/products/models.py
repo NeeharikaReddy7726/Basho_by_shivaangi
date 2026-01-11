@@ -1,5 +1,6 @@
  # Create your models here.
 from django.db import models
+import uuid
 
 class Category(models.Model):
     name = models.CharField(max_length=50, unique=True)  # tableware, decor, custom
@@ -106,6 +107,13 @@ class CustomOrder(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+
+    email_verification_token = models.UUIDField(
+        default=uuid.uuid4,
+        unique=True,
+        editable=False
+    )
+    email_verified = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.name} - {self.product_type}"

@@ -1,3 +1,27 @@
+<<<<<<< HEAD
+// -------vrunda------------------
+import axios from "axios";
+
+const api = axios.create({
+  baseURL: "http://127.0.0.1:8000", // change when deployed
+  withCredentials: true,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+export default api;
+
+// -------------------------------
+
+import { Product } from '@/types/product';
+
+export const API_BASE = 'http://127.0.0.1:8000/api';
+// lib/api.ts
+export const VAPI_BASE = "http://localhost:8000";
+
+
+=======
  
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE || "http://127.0.0.1:8000/api";
@@ -40,6 +64,7 @@ export async function registerWorkshop(payload: {
   // ------------
 
 import { Product } from '@/types/product';
+>>>>>>> origin/main
 
 export async function fetchProducts(): Promise<Product[]> {
  const res = await fetch(`${API_BASE}/products/`, {

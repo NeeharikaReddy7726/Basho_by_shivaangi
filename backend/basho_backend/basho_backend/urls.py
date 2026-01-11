@@ -9,7 +9,7 @@ urlpatterns = [
     path("api/corporate/", include("apps.corporate.urls")),
     path("api/experiences/", include("apps.experiences.urls")),
     path("api/products/", include("apps.products.urls")),
-
+    path("api/orders/", include("apps.orders.urls")),
 ]
 
 urlpatterns += static(
