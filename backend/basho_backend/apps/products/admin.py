@@ -42,14 +42,14 @@ class CustomOrderAdmin(admin.ModelAdmin):
         "id",
         "name",
         "email",
+        "email_verified",
         "product_type",
-        "quantity",
         "status",
         "created_at",
         "send_email_button",
     )
 
-    list_filter = ("status", "product_type", "created_at")
+    list_filter = ("email_verified", "status", "product_type", "created_at")
     search_fields = ("name", "email", "phone")
 
     readonly_fields = (
@@ -65,6 +65,9 @@ class CustomOrderAdmin(admin.ModelAdmin):
         "description",
         "created_at",
         "updated_at",
+        "email_verified",
+        "email_verification_token",
+
     )
 
     fieldsets = (
@@ -91,10 +94,17 @@ class CustomOrderAdmin(admin.ModelAdmin):
     )
 
     inlines = [CustomOrderImageInline]
-
+    
     def send_email_button(self, obj):
-        url = reverse("admin:send-custom-order-email", args=[obj.id])
-        return format_html('<a class="button" href="{}">Send Email</a>', url)
+        if not obj.email_verified:
+            return format_html(
+                '<span style="color:red;font-weight:600;">{}</span>',"Email not verified"
+            )
+
+        return format_html(
+            '<a class="button" href="/admin/custom-orders/{}/send-email/">{}</a>', obj.id,"Send Email"
+            
+        )  
     
     def get_urls(self):
         urls = super().get_urls()

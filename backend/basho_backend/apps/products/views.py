@@ -9,6 +9,14 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
 
+from django.shortcuts import get_object_or_404
+from django.http import HttpResponse
+from .models import CustomOrder
+
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.conf import settings
+
 
 # List all products
 class ProductListView(generics.ListAPIView):
@@ -55,4 +63,48 @@ class CustomOrderCreateView(generics.CreateAPIView):
         context["request"] = self.request
         return context
 
- 
+def verify_custom_order_email(request, token):
+    order = get_object_or_404(
+        CustomOrder,
+        email_verification_token=token
+    )
+
+    if order.email_verified:
+        return HttpResponse(
+            "Your email is already verified.",
+            content_type="text/plain"
+        )
+
+    order.email_verified = True
+    order.save(update_fields=["email_verified"])
+
+    return HttpResponse(
+        "<h2>Thank you! Your email has been successfully verified.</h2>"
+        "<p>Thank you. We will contact you shortly.</p>"
+    )
+
+def perform_create(self, serializer):
+    order = serializer.save()
+
+    verification_link = (
+        f"{settings.FRONTEND_URL}/verify-email/"
+        f"{order.email_verification_token}/"
+    )
+
+    html_content = render_to_string(
+        "email/verify_custom_order_email.html",
+        {
+            "name": order.name,
+            "verification_link": verification_link,
+        }
+    )
+
+    email = EmailMultiAlternatives(
+        subject="Verify your custom order – Basho by Shivangi",
+        body="Please verify your email to confirm your custom order.",
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=[order.email],
+    )
+
+    email.attach_alternative(html_content, "text/html")
+    email.send()

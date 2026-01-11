@@ -7,6 +7,7 @@ from .views import (
     CustomOrderCreateView,
 )
 from .admin_views import send_custom_order_email
+from .views import verify_custom_order_email
 
 
 urlpatterns = [
@@ -17,5 +18,11 @@ urlpatterns = [
     # Custom Orders (MUST come before <str:id>)
     path("custom-orders/", CustomOrderCreateView.as_view(), name="custom-order-create"),
     # Single product
+    path(
+        "custom-orders/verify/<uuid:token>/",
+        verify_custom_order_email,
+        name="verify-custom-order-email",
+    ),
+
     path("<str:id>/", ProductDetailView.as_view(), name="product-detail"),
 ]
