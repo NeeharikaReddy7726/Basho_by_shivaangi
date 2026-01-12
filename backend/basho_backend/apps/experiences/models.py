@@ -1,5 +1,5 @@
 from django.db import models
-
+from django.core.exceptions import ValidationError
 class Experience(models.Model):
     title = models.CharField(max_length=200)
     tagline = models.CharField(max_length=200)
@@ -55,6 +55,13 @@ class ExperienceSlot(models.Model):
  
 
 class Booking(models.Model):
+    STATUS_CHOICES = (
+        ("pending", "Pending"),
+        ("confirmed", "Confirmed"),
+        ("cancelled", "Cancelled"),
+        ("failed", "Failed"),
+    )
+
     experience = models.ForeignKey(
         Experience,
         on_delete=models.CASCADE,
@@ -64,9 +71,7 @@ class Booking(models.Model):
     slot = models.ForeignKey(
         ExperienceSlot,
         on_delete=models.PROTECT,
-        related_name="bookings",
-        null=True,
-        blank=True
+        related_name="bookings"
     )
 
     full_name = models.CharField(max_length=100)
@@ -74,36 +79,30 @@ class Booking(models.Model):
     email = models.EmailField()
 
     booking_date = models.DateField()
-    number_of_people = models.IntegerField(default=2)
+    number_of_people = models.PositiveIntegerField()
 
     status = models.CharField(
         max_length=20,
-        choices=[
-            ("pending", "Pending"),
-            ("confirmed", "Confirmed"),
-            ("cancelled", "Cancelled"),
-        ],
-        default="pending"
-    )
-    
-    otp = models.CharField(max_length=6, null=True, blank=True)
-    otp_expires_at = models.DateTimeField(null=True, blank=True)
-
-    payment_status = models.CharField(
-        max_length=20,
-        choices=[
-            ("pending", "Pending"),
-            ("paid", "Paid"),
-            ("failed", "Failed"),
-        ],
+        choices=STATUS_CHOICES,
         default="pending"
     )
 
-    payment_amount = models.IntegerField(default=0)
+    payment_amount = models.PositiveIntegerField()
+
+    # 🔗 LINK TO ORDERS APP
+    payment_order = models.OneToOneField(
+        "orders.PaymentOrder",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="experience_booking"
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.full_name} - {self.experience.title}"
+
     
 class StudioBooking(models.Model):
     full_name = models.CharField(max_length=100)
@@ -205,6 +204,12 @@ class WorkshopSlot(models.Model):
         return f"{self.workshop.name} | {self.date} {self.start_time}"
 
 class WorkshopRegistration(models.Model):
+    STATUS_CHOICES = (
+        ("pending", "Pending"),
+        ("confirmed", "Confirmed"),
+        ("failed", "Failed"),
+    )
+
     workshop = models.ForeignKey(
         Workshop,
         on_delete=models.CASCADE,
@@ -213,7 +218,7 @@ class WorkshopRegistration(models.Model):
 
     slot = models.ForeignKey(
         WorkshopSlot,
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name="registrations"
     )
 
@@ -224,6 +229,21 @@ class WorkshopRegistration(models.Model):
     number_of_participants = models.PositiveIntegerField()
     special_requests = models.TextField(blank=True, null=True)
     gst_number = models.CharField(max_length=50, blank=True, null=True)
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="pending"
+    )
+
+    # 🔗 LINK TO ORDERS APP
+    payment_order = models.OneToOneField(
+        "orders.PaymentOrder",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="workshop_registration"
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
 

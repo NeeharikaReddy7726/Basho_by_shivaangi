@@ -39,9 +39,23 @@ class ExperienceSlotAdmin(admin.ModelAdmin):
 
 @admin.register(Booking)
 class BookingAdmin(admin.ModelAdmin):
-    list_display = ("full_name", "experience", "status", "payment_status")
-    list_filter = ("status", "payment_status")
-    search_fields = ("full_name", "email")
+    list_display = (
+        "id",
+        "full_name",
+        "experience",
+        "status",
+        "payment_status_display",
+        "created_at",
+    )
+
+    list_filter = ("status",)
+
+    def payment_status_display(self, obj):
+        if obj.payment_order:
+            return obj.payment_order.status
+        return "NO PAYMENT"
+
+    payment_status_display.short_description = "Payment Status"
 
 
 @admin.register(StudioBooking)
@@ -87,11 +101,17 @@ class WorkshopSlotAdmin(admin.ModelAdmin):
 @admin.register(WorkshopRegistration)
 class WorkshopRegistrationAdmin(admin.ModelAdmin):
     list_display = (
+        "id",
         "name",
         "workshop",
-        "slot",
-        "number_of_participants",
+        "status",
+        "payment_status_display",
         "created_at",
     )
-    list_filter = ("workshop", "created_at")
-    search_fields = ("name", "email", "phone")
+
+    def payment_status_display(self, obj):
+        if obj.payment_order:
+            return obj.payment_order.status
+        return "NO PAYMENT"
+
+    payment_status_display.short_description = "Payment Status"
