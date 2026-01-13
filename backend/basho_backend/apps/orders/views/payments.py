@@ -154,4 +154,8 @@ def verify_payment(request):
         return JsonResponse(
             {"error": "Payment verification failed"},
             status=400
+<<<<<<< HEAD
         )
+=======
+        )
+>>>>>>> origin/main
