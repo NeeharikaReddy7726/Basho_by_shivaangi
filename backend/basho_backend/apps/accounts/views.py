@@ -15,7 +15,8 @@ from rest_framework.decorators import authentication_classes
 
 from .models import User, EmailOTP
 from .otp import generate_otp
-from .services import send_otp_email
+from .services import send_otp_email, send_welcome_email
+
 
 from django.contrib.auth import get_user_model
 from django.utils.crypto import get_random_string
@@ -98,6 +99,8 @@ def register_user(request):
     )
     user.is_email_verified = True
     user.save()
+    send_welcome_email(email, username)
+
 
     otp_obj.delete()
 
@@ -108,6 +111,8 @@ def register_user(request):
         "refresh": str(refresh),
         "username": user.username,
     })
+
+
 
 
 
