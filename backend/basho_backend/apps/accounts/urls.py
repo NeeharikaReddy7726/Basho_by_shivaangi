@@ -7,6 +7,7 @@ from .views import (
     google_register,
     change_username,  
     me,
+    set_avatar,
 
 )
 
@@ -18,6 +19,8 @@ urlpatterns = [
     path("google-register/", google_register),
     path("change-username/", change_username),
     path("me/", me),
+    path("set-avatar/", set_avatar),
+
 
 
    

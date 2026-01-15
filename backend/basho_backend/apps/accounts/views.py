@@ -123,7 +123,8 @@ def login_user(request):
         "refresh": str(refresh),
         "username": user.username,
         "email": user.email,
-        "profile_image": user.profile_image.url if user.profile_image else None,
+        "avatar": user.avatar,
+
     })
 
 
@@ -142,7 +143,8 @@ def google_login(request):
         "refresh": str(refresh),
         "username": user.username,
         "email": user.email,
-        "profile_image": user.profile_image.url if user.profile_image else None,
+        "avatar": user.avatar,
+
     })
 
 
@@ -193,6 +195,35 @@ def change_username(request):
 
 # ---------------- PROFILE PICTURE ----------------
 
+@api_view(["POST"])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def set_avatar(request):
+    user = request.user
+    avatar = request.data.get("avatar")
+
+    if not avatar:
+        return Response({"error": "Avatar is required"}, status=400)
+
+    # optional safety check
+    allowed_avatars = [
+        "p1.png", "p2.png", "p3.png", "p4.png", "p5.png",
+        "p6.png", "p7.png", "p8.png", "p9.png", "p10.png",
+        "p11.png", "p12.png", "p13.png", "p14.png",
+        "p15.png", "p16.png", "p17.png",
+    ]
+
+    if avatar not in allowed_avatars:
+        return Response({"error": "Invalid avatar"}, status=400)
+
+    user.avatar = avatar
+    user.save(update_fields=["avatar"])
+
+    return Response({
+        "avatar": user.avatar
+    })
+
+
 @api_view(["GET"])
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
@@ -201,7 +232,8 @@ def me(request):
     return Response({
         "username": user.username,
         "email": user.email,
-        "profile_image": user.profile_image.url if user.profile_image else None,
+        "avatar": user.avatar,
+
     })
 
 
