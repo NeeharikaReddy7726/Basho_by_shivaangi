@@ -16,6 +16,13 @@ from .otp import generate_otp
 from .services import send_otp_email, send_welcome_email
 
 
+import os
+from django.core.files import File
+from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
+
+
+
 # ---------------- HELPERS ----------------
 
 def is_strong_password(password):
@@ -186,36 +193,17 @@ def change_username(request):
 
 # ---------------- PROFILE PICTURE ----------------
 
-@api_view(["POST"])
+@api_view(["GET"])
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
-def upload_profile_picture(request):
+def me(request):
     user = request.user
-    image = request.FILES.get("image")
+    return Response({
+        "username": user.username,
+        "email": user.email,
+        "profile_image": user.profile_image.url if user.profile_image else None,
+    })
 
-    if not image:
-        return Response({"error": "No image provided"}, status=400)
-
-    user.profile_image = image
-    user.save()
-
-    return Response({"profile_image": user.profile_image.url})
-
-
-@api_view(["POST"])
-@authentication_classes([JWTAuthentication])
-@permission_classes([IsAuthenticated])
-def set_profile_picture_from_url(request):
-    user = request.user
-    image_url = request.data.get("image_url")
-
-    if not image_url:
-        return Response({"error": "Image URL required"}, status=400)
-
-    user.profile_image = image_url.replace("http://127.0.0.1:8000/media/", "")
-    user.save(update_fields=["profile_image"])
-
-    return Response({"profile_image": user.profile_image.url})
 
 
 # ---------------- FORGOT PASSWORD ----------------
