@@ -2,37 +2,26 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { CartIcon } from "@/components/shared/CartIcon";
 import { logout, isLoggedIn, getUsername } from "@/lib/auth";
 
-const DEFAULT_BACKEND_AVATAR =
-  "http://127.0.0.1:8000/media/profile_pics/default/default.png";
+const DEFAULT_AVATAR = "/image_aish/avatars/p1.png";
 
 
 export default function Navbar() {
   const router = useRouter();
-  const pathname = usePathname();
-
   const [loggedIn, setLoggedIn] = useState(false);
   const [username, setUsername] = useState<string | null>(null);
   const [showLogoutPopup, setShowLogoutPopup] = useState(false);
-
   const [showAvatarModal, setShowAvatarModal] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [profileImage, setProfileImage] = useState<string>(DEFAULT_AVATAR);
 
-  
-const [isMobile, setIsMobile] = useState(false);
-const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  
-
-const [uploading, setUploading] = useState(false);
-
-const [profileImage, setProfileImage] = useState<string>(
-  DEFAULT_BACKEND_AVATAR
-);
 
 /* ================= AUTH REFRESH ================= */
 const refreshAuth = async () => {
@@ -43,33 +32,32 @@ const refreshAuth = async () => {
   setUsername(user);
 
   if (!logged) {
-    setProfileImage(DEFAULT_BACKEND_AVATAR);
+    setProfileImage(DEFAULT_AVATAR);
     return;
   }
 
   try {
-    const res = await fetch(
-      "http://127.0.0.1:8000/api/accounts/me/",
-      {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-        },
-      }
-    );
+    const res = await fetch("http://127.0.0.1:8000/api/accounts/me/", {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+      },
+    });
+
+    if (!res.ok) throw new Error("Unauthorized");
 
     const data = await res.json();
-    setProfileImage(data.profile_image || DEFAULT_BACKEND_AVATAR);
+
+    if (data.avatar) {
+      setProfileImage(`/image_aish/avatars/${data.avatar}`);
+    } else {
+      setProfileImage(DEFAULT_AVATAR);
+    }
   } catch {
-    setProfileImage(DEFAULT_BACKEND_AVATAR);
+    setProfileImage(DEFAULT_AVATAR);
   }
 };
 
-
-
-
-
-
- useEffect(() => {
+useEffect(() => {
   refreshAuth();
   // eslint-disable-next-line react-hooks/exhaustive-deps
 }, []);
@@ -77,14 +65,10 @@ const refreshAuth = async () => {
 
   const handleLogout = () => {
   logout();
-  setProfileImage(DEFAULT_BACKEND_AVATAR);
   setUsername(null);
   setLoggedIn(false);
   router.replace("/");
 };
-
-
-
 
 
 useEffect(() => {
@@ -93,6 +77,24 @@ useEffect(() => {
   window.addEventListener("resize", handleResize);
   return () => window.removeEventListener("resize", handleResize);
 }, []);
+
+useEffect(() => {
+  const syncAuth = () => {
+    refreshAuth();
+  };
+
+  // When tab gains focus (after login redirect)
+  window.addEventListener("focus", syncAuth);
+
+  // When localStorage changes (login/register)
+  window.addEventListener("storage", syncAuth);
+
+  return () => {
+    window.removeEventListener("focus", syncAuth);
+    window.removeEventListener("storage", syncAuth);
+  };
+}, []);
+
 
 
 
@@ -109,109 +111,60 @@ useEffect(() => {
   const [usernameError, setUsernameError] = useState("");
 
   const handleChangeUsername = async () => {
-    setUsernameError("");
+  setUsernameError("");
 
-    if (!newUsername.trim()) {
-      setUsernameError("Username cannot be empty");
-      return;
-    }
-
-    const res = await fetch(
-      "http://127.0.0.1:8000/api/accounts/change-username/",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-        },
-        body: JSON.stringify({ username: newUsername }),
-      }
-    );
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      setUsernameError(data.error || "Username already taken");
-      return;
-    }
-
-    // ✅ Update UI instantly
-    localStorage.setItem("username", data.username);
-    setUsername(data.username);
-
-    setShowChangeUsername(false);
-    setNewUsername("");
-  };
-
-  const uploadCustomAvatar = async (file?: File) => {
-  if (!file) return;
-
-  // ✅ SIZE VALIDATION (2MB)
-  const MAX_SIZE = 2 * 1024 * 1024; // 2MB
-  if (file.size > MAX_SIZE) {
-    alert("Image size must be less than 2 MB");
+  if (!newUsername.trim()) {
+    setUsernameError("Username cannot be empty");
     return;
   }
 
-  // ✅ TYPE VALIDATION
-  const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
-  if (!allowedTypes.includes(file.type)) {
-    alert("Only JPG, PNG, or WEBP images are allowed");
+  const res = await fetch(
+    "http://127.0.0.1:8000/api/accounts/change-username/",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+      },
+      body: JSON.stringify({ username: newUsername }),
+    }
+  );
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    setUsernameError(data.error || "Username already taken");
     return;
   }
 
-  
+  localStorage.setItem("username", data.username);
+  setUsername(data.username);
 
-
-  const formData = new FormData();
-  formData.append("image", file);
-
-  setUploading(true);
-
-  try {
-    const res = await fetch(
-      "http://127.0.0.1:8000/api/accounts/upload-profile-picture/",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-        },
-        body: formData,
-      }
-    );
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      alert(data.error || "Upload failed");
-      return;
-    }
-
-   
-setProfileImage(data.profile_image);
-
-    setShowAvatarModal(false);
-  } finally {
-    setUploading(false);
-  }
+  setShowChangeUsername(false);
+  setNewUsername("");
 };
 
 
-const saveAvatar = async (url: string) => {
-  try {
-    const avatarName = url.split("/").pop();
 
+
+const saveAvatar = async (url: string) => {
+  const avatarName = url.split("/").pop();
+
+  if (!avatarName) {
+    alert("Invalid avatar");
+    return;
+  }
+
+  try {
     const res = await fetch(
-      "http://127.0.0.1:8000/api/accounts/set-profile-picture/",
+      "http://127.0.0.1:8000/api/accounts/set-avatar/",
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
         },
-        body: JSON.stringify({
-          image_url: `profile_pics/${avatarName}`,
-        }),
+        body: JSON.stringify({ avatar: avatarName }),
       }
     );
 
@@ -222,18 +175,16 @@ const saveAvatar = async (url: string) => {
       return;
     }
 
-    setProfileImage(data.profile_image);
+    // ✅ Persist visually
+    setProfileImage(`/image_aish/avatars/${data.avatar}`);
+
     setShowAvatarModal(false);
   } catch {
     alert("Failed to update profile picture");
   }
 };
 
-
-
-
-
-  return (
+return (
     <header className="sticky top-0 z-50 bg-white border-b border-[var(--basho-divider)]">
       <div className="max-w-7xl mx-auto px-8 h-20 flex items-center justify-between">
 
@@ -474,15 +425,10 @@ const saveAvatar = async (url: string) => {
         Choose Profile Picture
       </h3>
 
-      {/* 🔄 LOADING SPINNER */}
-      {uploading && (
-        <div className="flex justify-center items-center py-8">
-          <div className="w-10 h-10 border-4 border-[#652810] border-t-transparent rounded-full animate-spin" />
-        </div>
-      )}
+     
 
       {/* 🖼 PRESET AVATARS — 5 PER ROW */}
-      {!uploading && (
+      
   <div className="grid grid-cols-5 gap-4 mb-4">
     {[
       "/image_aish/avatars/p1.png",
@@ -511,7 +457,7 @@ const saveAvatar = async (url: string) => {
       />
     ))}
   </div>
-)}
+
 
 
 
@@ -522,8 +468,8 @@ const saveAvatar = async (url: string) => {
       <button
         className="mt-4 w-full border rounded py-2 text-[#652810]"
         onClick={() => setShowAvatarModal(false)}
-        disabled={uploading}
       >
+
         Cancel
       </button>
 
