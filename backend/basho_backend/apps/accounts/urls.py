@@ -20,11 +20,6 @@ urlpatterns = [
     path("change-username/", change_username),
     path("me/", me),
     path("set-avatar/", set_avatar),
-
-
-
-   
-
 ]
 
 from .views import (
