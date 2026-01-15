@@ -6,11 +6,14 @@ class Experience(models.Model):
     description = models.TextField()
     duration = models.CharField(max_length=50)
     people = models.CharField(max_length=50)
-    min_participants = models.PositiveIntegerField()
-    max_participants = models.PositiveIntegerField()
+
+    min_participants = models.PositiveIntegerField(null=True, blank=True)
+    max_participants = models.PositiveIntegerField(null=True, blank=True)
+
     price = models.IntegerField()
     image = models.ImageField(upload_to="experiences/")
     is_active = models.BooleanField(default=True)
+
 
     def __str__(self):
         return self.title
