@@ -12,7 +12,9 @@ from .views import (
     ListExperiencesView,
     ListExperienceAvailableDatesView,
     ListExperienceSlotsByDateView,
-    VerifyExperiencePaymentView  # ✅ ADD THIS
+    VerifyExperiencePaymentView,  
+    my_workshops,
+    my_experiences
 )
 
 
@@ -58,4 +60,8 @@ urlpatterns = [
         CreateWorkshopRegistrationView.as_view(),
         name="workshop-register",
     ),
+    path("my-workshops/", my_workshops),
+    path("my-experiences/", my_experiences),
+
+
 ]

@@ -67,8 +67,6 @@ export async function registerWorkshop(payload: {
   const text = await res.text();
   console.log("RAW RESPONSE TEXT:", text);
 
-
-
   try {
     const data = JSON.parse(text);
     if (!res.ok) throw data;
@@ -81,7 +79,6 @@ export async function registerWorkshop(payload: {
 /* =========================
    PRODUCTS
 ========================= */
-
 export async function fetchProducts(): Promise<Product[]> {
   const res = await fetch(`${API_BASE}/products/`, {
     cache: "no-store",

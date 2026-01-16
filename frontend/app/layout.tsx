@@ -8,9 +8,6 @@ import Script from "next/script";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { CartProvider } from "@/context/CartContext";
 import ClientShell from "@/components/Clientshell";
-
-/* Audio BGM Settings */
-
 import { MusicProvider } from "@/context/MusicContext"; 
 import MusicConsentModal from "@/components/MusicConsentModal"; 
 
