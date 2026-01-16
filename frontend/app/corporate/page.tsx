@@ -18,6 +18,9 @@ import {
 import heroPottery from "@/public/Images/products/10.png";
 import productVase from "@/public/Images/products/12.png";
 import productPlate from "@/public/Images/products/11.png";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
+
 type InputProps = {
   label: string;
   name: string;
@@ -168,9 +171,23 @@ const Textarea = ({ label, name, placeholder, value, onChange }: TextareaProps) 
     />
   </div>
 );
+
+
+
+
 export default function CorporateClient() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [submittedInquiry, setSubmittedInquiry] = useState<null | {
+  companyName: string;
+  serviceType: string;
+  email: string;
+  createdAt: string;
+}>(null);
+
+// ✅ ADD THIS HERE
+  const [error, setError] = useState("");
 
   const [formData, setFormData] = useState({
     companyName: "",
@@ -234,9 +251,10 @@ export default function CorporateClient() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError(""); // ✅ clear old errors
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/corporate/corporate-inquiry/", {
+      const res = await fetch(`${API_BASE}/api/corporate/corporate-inquiry/`, {
 
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -245,48 +263,66 @@ export default function CorporateClient() {
 
       if (!res.ok) throw new Error("Failed");
 
-      alert("Inquiry submitted! We’ll contact you within 24–48 hours.");
-      setFormData({
-        companyName: "",
-        companyWebsite: "",
-        contactName: "",
-        email: "",
-        phone: "",
-        serviceType: "",
+      setSubmittedInquiry({
+      companyName: formData.companyName,
+      serviceType: formData.serviceType,
+      email: formData.email,
+      createdAt: new Date().toISOString(),
+    });
 
-        /* --- Corporate Gifting --- */
-        giftingOccasion: "",
-        giftingQuantity: "",
-        giftingBudgetPerItem: "",
-        deliveryDate: "",
-        customization: [] as string[],
+      // setFormData({
+      //   companyName: "",
+      //   companyWebsite: "",
+      //   contactName: "",
+      //   email: "",
+      //   phone: "",
+      //   serviceType: "",
 
-        /* --- Workshops --- */
-        teamSize: "",
-        workshopType: "",
-        workshopLocationType: "",
-        workshopDate: "",
-        durationPreference: "",
+      //   /* --- Corporate Gifting --- */
+      //   giftingOccasion: "",
+      //   giftingQuantity: "",
+      //   giftingBudgetPerItem: "",
+      //   deliveryDate: "",
+      //   customization: [] as string[],
 
-        /* --- Brand Collaboration --- */
-        brandType: "",
-        collaborationIdea: "",
-        collaborationTimeline: "",
-        collaborationScope: "",
+      //   /* --- Workshops --- */
+      //   teamSize: "",
+      //   workshopType: "",
+      //   workshopLocationType: "",
+      //   workshopDate: "",
+      //   durationPreference: "",
 
-        message: "",
-        budget: "",
-        timeline: "",
-        consent: false,
-      });
+      //   /* --- Brand Collaboration --- */
+      //   brandType: "",
+      //   collaborationIdea: "",
+      //   collaborationTimeline: "",
+      //   collaborationScope: "",
+
+      //   message: "",
+      //   budget: "",
+      //   timeline: "",
+      //   consent: false,
+      // });
+
+      // ✅ SCROLL AFTER SUCCESS
+       window.scrollTo({
+      top: document.body.scrollHeight,
+      behavior: "smooth",
+    });
+
     } catch (err) {
-      alert("Something went wrong. Please try again.");
+       setError("Submission failed. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
  const service = formData.serviceType;
+ const formatDate = (date: string) =>
+  new Date(date).toLocaleString("en-IN", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
 
   return (
     <main>
@@ -626,6 +662,66 @@ export default function CorporateClient() {
               transition={{ delay: 0.2 }}
               className="bg-white/70 backdrop-blur rounded-xl p-8 border border-[var(--basho-brown)]/25 shadow-sm"
             >
+              {submittedInquiry ? (
+  /* ✅ SUCCESS CARD */
+  <div className="bg-white border border-green-300 rounded-xl p-10 text-center shadow-sm">
+    <h3 className="text-2xl font-semibold text-green-700 mb-4">
+      🎉 Inquiry Submitted Successfully
+    </h3>
+
+    <p className="text-gray-700 mb-2">
+      <strong>Company:</strong> {submittedInquiry.companyName}
+    </p>
+
+    <p className="text-gray-700 mb-2">
+      <strong>Service:</strong> {submittedInquiry.serviceType}
+    </p>
+
+    <p className="text-gray-700 mb-6">
+      <strong>Submitted on:</strong>{" "}
+      {formatDate(submittedInquiry.createdAt)}
+    </p>
+
+    <button
+      onClick={() => {
+        setSubmittedInquiry(null);
+        setFormData({
+          companyName: "",
+          companyWebsite: "",
+          contactName: "",
+          email: "",
+          phone: "",
+          serviceType: "",
+
+          giftingOccasion: "",
+          giftingQuantity: "",
+          giftingBudgetPerItem: "",
+          deliveryDate: "",
+          customization: [],
+
+          teamSize: "",
+          workshopType: "",
+          workshopLocationType: "",
+          workshopDate: "",
+          durationPreference: "",
+
+          brandType: "",
+          collaborationIdea: "",
+          collaborationTimeline: "",
+          collaborationScope: "",
+
+          message: "",
+          budget: "",
+          timeline: "",
+          consent: false,
+        });
+      }}
+      className="px-6 py-3 bg-[var(--basho-brown)] text-white rounded-lg hover:bg-[var(--basho-terracotta)] transition"
+    >
+      Submit Another Inquiry
+    </button>
+  </div>
+) : (
               <form onSubmit={handleSubmit} className="space-y-6">
   {/* Company Info */}
   <div className="grid md:grid-cols-2 gap-4">
@@ -855,6 +951,12 @@ export default function CorporateClient() {
     <span>I agree to be contacted regarding this inquiry.</span>
   </div>
 
+{/* ❗ ERROR MESSAGE */}
+  {error && (
+  <p className="text-red-600 text-sm bg-red-50 border border-red-200 rounded-md px-4 py-2">
+    {error}
+  </p>
+)}
   {/* Submit Button */}
   <button
     type="submit"
@@ -864,7 +966,7 @@ export default function CorporateClient() {
     <Send className="w-4 h-4" />
     {isSubmitting ? "SUBMITTING..." : "SUBMIT INQUIRY"}
   </button>
-</form>
+</form> )}
             </motion.div>
           </div>
         </div>

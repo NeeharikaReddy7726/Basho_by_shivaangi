@@ -97,7 +97,7 @@ useEffect(() => {
             transition={{ duration: 0.8, delay: 0.3 }}
             className="text-4xl md:text-5xl font-semibold mb-4"
           >
-            Pottery Workshops
+            POTTERY WORKSHOPS
           </motion.h1>
 
           {/* Subtitle */}

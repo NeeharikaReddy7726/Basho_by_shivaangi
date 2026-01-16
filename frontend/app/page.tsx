@@ -4,7 +4,7 @@ import { useRef, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import AddReviewModal from "@/components/AddReviewModal";
 import ReviewSuccessModal from "@/components/ReviewSuccessModal";
-
+import ClientShell from "@/components/Clientshell";
 
 const philosophy = [
   {
@@ -162,6 +162,7 @@ useEffect(() => {
 
 
   return (
+    <ClientShell> 
     <main>
     
       <div className="w-full overflow-x-hidden">
@@ -193,17 +194,6 @@ useEffect(() => {
         {showReviewSuccess && (
           <ReviewSuccessModal onClose={() => setShowReviewSuccess(false)} />
         )}
-
-
-
-
-
-
-
-  
-
-
-
       {/* ================= SEGMENT 1 : HERO ================= */}
       <section
         className="min-h-screen flex items-center justify-center text-center text-white relative"
@@ -710,5 +700,6 @@ useEffect(() => {
     </div>
     
      </main>
+      </ClientShell>
   );
 }

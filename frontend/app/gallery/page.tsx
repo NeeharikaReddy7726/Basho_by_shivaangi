@@ -196,7 +196,7 @@ const filteredImages =
           className="absolute inset-0"
         >
           <Image
-            src="/image_aish/home/home_pot.jpg"
+            src="/Images/workshop-pieces/15.png"
             alt="Corporate pottery"
             fill
             priority
@@ -216,7 +216,7 @@ const filteredImages =
             transition={{ duration: 0.8, delay: 0.3 }}
             className="text-4xl md:text-5xl font-semibold mb-4"
           >
-            Gallery
+            GALLERY
           </motion.h1>
 
           {/* Subtitle */}

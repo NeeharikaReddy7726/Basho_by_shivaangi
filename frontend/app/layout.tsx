@@ -7,7 +7,6 @@ import Navbar from "@/components/Navbar";
 import Script from "next/script";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { CartProvider } from "@/context/CartContext";
-import ClientShell from "@/components/Clientshell";
 
 
 
@@ -55,12 +54,10 @@ export default function RootLayout({
         <GoogleOAuthProvider
           clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!}
         >
-          <CartProvider>
-            <ClientShell>
+          <CartProvider>    
               <Navbar />
               <main className="grow">{children}</main>
-              <Footer />
-            </ClientShell>
+              <Footer />  
           </CartProvider>
         </GoogleOAuthProvider>
 
