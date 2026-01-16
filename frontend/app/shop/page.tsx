@@ -17,13 +17,21 @@ import { Section } from '@/components/shared/Section';
 export default function ShopPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [activeFilter, setActiveFilter] = useState<CategoryFilter>('all');
+  const [loading, setLoading] = useState(true);
 
+ useEffect(() => {
+  setLoading(true); // ✅ start loading
 
-  useEffect(() => {
-    fetchProducts()
-      .then(setProducts)
-      .catch(console.error);
-  }, []);
+  fetchProducts()
+    .then((data) => {
+      setProducts(data);
+    })
+    .catch(console.error)
+    .finally(() => {
+      setLoading(false); // ✅ stop loading
+    });
+}, []);
+
 
 
   // Filter products based on selected category
@@ -121,11 +129,22 @@ const filterOptions: {
           filters={filterOptions}
         />
 
-        {/* Product Grid */}
+      {/* Product Grid */}
+      {loading ? (
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+          {[...Array(8)].map((_, i) => (
+            <div
+              key={i}
+              className="h-[320px] bg-gray-200 animate-pulse rounded-xl"
+            />
+          ))}
+        </div>
+      ) : (
         <ProductGrid 
           products={filteredProducts}
           emptyMessage="No products found in this category."
         />
+      )}
       </Section>
       {/* Additional Info Section */}
       <Section bgColor="bg-[#D8CBC4]" className="py-16">

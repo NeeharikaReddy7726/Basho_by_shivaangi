@@ -14,7 +14,7 @@ import type { Workshop } from "@/types/workshop";
 export default function WorkshopsPage() {
   const [activeFilter, setActiveFilter] = useState("all");
   const [workshopsData, setWorkshopsData] = useState<Workshop[]>([]);
-
+  const [loading, setLoading] = useState(true); 
   const workshopsSectionRef = useRef<HTMLDivElement>(null);
 
   const scrollToWorkshops = () => {
@@ -26,11 +26,25 @@ export default function WorkshopsPage() {
 
 useEffect(() => {
   const loadWorkshops = async () => {
-    const data = await fetchWorkshopsClient();
-    console.log("Workshops API response:", data);
+    const start = Date.now();
+    setLoading(true);
 
-    if (Array.isArray(data)) {
-      setWorkshopsData(data);
+    try {
+      const data = await fetchWorkshopsClient();
+
+      if (Array.isArray(data)) {
+        setWorkshopsData(data);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      const elapsed = Date.now() - start;
+      const minDelay = 250;
+
+      setTimeout(
+        () => setLoading(false),
+        Math.max(0, minDelay - elapsed)
+      );
     }
   };
 
@@ -133,11 +147,23 @@ useEffect(() => {
             filters={filterOptions}
           />
 
-          {/* Workshop Grid */}
+        {/* Workshop Grid */}
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[...Array(6)].map((_, i) => (
+              <div
+                key={i}
+                className="h-[360px] bg-gray-200 animate-pulse rounded-sm"
+              />
+            ))}
+          </div>
+        ) : (
           <WorkshopGrid
             workshops={filteredWorkshops}
             emptyMessage="No workshops available for the selected filter."
           />
+        )}
+
         </Section>
       </div>
 
