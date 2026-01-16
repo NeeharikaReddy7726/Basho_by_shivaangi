@@ -254,7 +254,7 @@ if (!verifyRes.ok) {
         <div className={styles.imageWrapper}>
   {image && image.length > 0 ? (
     <img
-      src={`http://127.0.0.1:8000${image[0].url}`} // first image
+      src={image[0].url}// first image
       alt={image[0].alt || title}
     />
   ) : (
