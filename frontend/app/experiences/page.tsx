@@ -6,6 +6,11 @@ import styles from "./Experiences.module.css";
 import { motion } from "framer-motion";
 import Image from "next/image";
 
+interface ExperienceImage {
+  url: string;
+  alt?: string;
+}
+
 interface Experience {
   id: number;
   title: string;
@@ -14,8 +19,9 @@ interface Experience {
   duration: string;
   people: string;
   price: number;
-  image: string;
+  image: ExperienceImage[]; // ✅ JSON array
 }
+
 
 export default function ExperiencesPage() {
   const [experiences, setExperiences] = useState<Experience[]>([]);
