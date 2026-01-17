@@ -15,6 +15,8 @@ from apps.orders.models import PaymentOrder, Payment, Transaction
 from apps.orders.models import OrderItem
 from apps.products.models import Product
 from apps.experiences.models import Booking, WorkshopRegistration
+from django.contrib.staticfiles import finders
+
 
 os.environ["PYTHONHTTPSVERIFY"] = "1"
 
@@ -135,13 +137,15 @@ def send_product_email(order):
 
     msg.attach_alternative(html_content, "text/html")
 
-    image_path = os.path.join(settings.BASE_DIR, "static", "care_card.png")
+    image_path = finders.find("care_card.png")
 
-    with open(image_path, "rb") as f:
-        img = MIMEImage(f.read())
-        img.add_header("Content-ID", "<care_card>")
-        img.add_header("Content-Disposition", "inline", filename="care_card.png")
-        msg.attach(img)
+    if image_path:
+        with open(image_path, "rb") as f:
+            img = MIMEImage(f.read())
+            img.add_header("Content-ID", "<care_card>")
+            img.add_header("Content-Disposition", "inline", filename="care_card.png")
+            msg.attach(img)
+
 
     msg.send(fail_silently=False)
 

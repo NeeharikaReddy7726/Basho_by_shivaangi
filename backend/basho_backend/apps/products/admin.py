@@ -136,23 +136,18 @@ class CustomOrderAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
 
     def delete_reference_images(self, request, queryset):
-        deleted_files = 0
+        deleted_count = 0
 
         for order in queryset:
             for image in order.images.all():
-                if image.image:
-                    image_path = image.image.path
-
-                    if os.path.isfile(image_path):
-                        os.remove(image_path)
-                        deleted_files += 1
-
-                    image.delete()
+                image.delete()   # Cloudinary handles deletion
+                deleted_count += 1
 
         self.message_user(
             request,
-            f"{deleted_files} reference image(s) deleted successfully."
+            f"{deleted_count} reference image(s) deleted successfully."
         )
+
 
     actions = ["delete_reference_images"]
     delete_reference_images.short_description = "Delete reference images for selected custom orders"

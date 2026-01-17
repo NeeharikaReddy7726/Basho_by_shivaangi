@@ -1,7 +1,7 @@
  # Create your models here.
 from django.db import models
 import uuid
-
+from cloudinary.models import CloudinaryField
 class Category(models.Model):
     name = models.CharField(max_length=50, unique=True)  # tableware, decor, custom
     slug = models.SlugField(unique=True)
@@ -124,7 +124,7 @@ class CustomOrderImage(models.Model):
         related_name="images",
         on_delete=models.CASCADE
     )
-    image = models.ImageField(upload_to="custom_orders/")
+    image = CloudinaryField("image")
 
     def __str__(self):
         return f"Image for Order {self.order.id}"

@@ -35,12 +35,23 @@ load_dotenv(ENV_PATH)
 SECRET_KEY = "django-insecure-^u76pivvsyckfi6cph^ez5ufq7#&$3#xuygjc7h0m62^bwr=$o"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get("DEBUG", "False") == "True"
 
-ALLOWED_HOSTS = [
-    "localhost",
-    "127.0.0.1",
+
+ALLOWED_HOSTS = os.environ.get(
+    "ALLOWED_HOSTS",
+    "localhost,127.0.0.1"
+).split(",")
+
+#Versal Related:
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
 ]
+
+
 
 
 # Application definition
@@ -65,6 +76,10 @@ INSTALLED_APPS = [
     "apps.reviews",
     "apps.main.apps.MainConfig",
     "rest_framework.authtoken",
+
+    "cloudinary",
+    "cloudinary_storage",
+
 ]
 JAZZMIN_SETTINGS = {
     # Admin titles
@@ -247,8 +262,8 @@ SIMPLE_JWT = {
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
 
-MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
+DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
+
 
 TIME_ZONE = 'Asia/Kolkata'
 USE_TZ = True
@@ -291,4 +306,15 @@ CORS_ALLOW_METHODS = [
 SESSION_COOKIE_SAMESITE = "Lax"
 SESSION_COOKIE_SECURE = False  # True only in HTTPS
  
+
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
+
+cloudinary.config(
+    cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
+    api_key=os.getenv("CLOUDINARY_API_KEY"),
+    api_secret=os.getenv("CLOUDINARY_API_SECRET"),
+)
+
 
