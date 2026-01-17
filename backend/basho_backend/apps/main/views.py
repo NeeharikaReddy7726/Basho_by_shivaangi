@@ -3,6 +3,8 @@ from django.db.models import Sum, Count
 from django.db.models.functions import TruncDate
 from django.shortcuts import render
 from django.contrib.auth.decorators import user_passes_test
+from apps.accounts.models import User
+from apps.reviews.models import Review
 
 from apps.orders.models import Order, PaymentOrder
 from apps.products.models import Product, CustomOrder
@@ -62,7 +64,8 @@ def home(request):
     pending_custom_orders = CustomOrder.objects.filter(status="pending").count()
 
     corporate_inquiries = CorporateInquiry.objects.count()
-
+    total_users = User.objects.count()
+    total_reviews = Review.objects.count()
     # =======================
     # 📈 REVENUE GRAPH (30 days)
     # =======================
@@ -100,9 +103,14 @@ def home(request):
         "pending_custom_orders": pending_custom_orders,
         "corporate_inquiries": corporate_inquiries,
 
+                # users & reviews
+        "total_users": total_users,
+        "total_reviews": total_reviews,
+
         # charts
         "revenue_labels": revenue_labels,
         "revenue_values": revenue_values,
+        
     }
 
     return render(request, "main/home.html", context)

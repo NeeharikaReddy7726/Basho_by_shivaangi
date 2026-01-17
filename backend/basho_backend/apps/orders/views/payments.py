@@ -10,7 +10,7 @@ from django.db import transaction
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from email.mime.image import MIMEImage
-
+from apps.orders.models import Cart
 from apps.orders.models import PaymentOrder, Payment, Transaction
 from apps.orders.models import OrderItem
 from apps.products.models import Product
@@ -147,7 +147,23 @@ def send_product_email(order):
 
     print("✅ PRODUCT EMAIL SENT TO:", recipient_email)
 
+def clear_user_cart(payment_order):
+    if not payment_order.user:
+        return  # guest checkout → no cart to clear
 
+    cart = Cart.objects.filter(
+        user=payment_order.user,
+        is_active=True
+    ).first()
+
+    if not cart:
+        return
+
+    cart.items.all().delete()
+    cart.is_active = False   # optional but recommended
+    cart.save()
+
+    print("🧹 Cart cleared for user:", payment_order.user.id)
 # ====================================================
 # VERIFY PAYMENT (SINGLE SOURCE OF TRUTH)
 # ====================================================
@@ -239,24 +255,3 @@ def verify_payment(request):
             {"error": "Payment verification failed"},
             status=400
         )
-
-from apps.orders.models import Cart
-
-
-def clear_user_cart(payment_order):
-    if not payment_order.user:
-        return  # guest checkout → no cart to clear
-
-    cart = Cart.objects.filter(
-        user=payment_order.user,
-        is_active=True
-    ).first()
-
-    if not cart:
-        return
-
-    cart.items.all().delete()
-    cart.is_active = False   # optional but recommended
-    cart.save()
-
-    print("🧹 Cart cleared for user:", payment_order.user.id)

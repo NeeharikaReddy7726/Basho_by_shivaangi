@@ -76,30 +76,49 @@ const handleSubmit = async (e: React.FormEvent) => {
   setIsPlacingOrder(true);
 
   try {
-    const response = await fetch(
-      `${VAPI_BASE}/api/orders/checkout/product/`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // ✅ YOUR JWT
+    // ---------------- 1️⃣ SYNC CART ----------------
+    const syncRes = await fetch(`${VAPI_BASE}/api/orders/cart/sync/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        items: cartItems.map((item) => ({
+          product_id: item.product.id,
+          quantity: item.quantity,
+        })),
+      }),
+    });
+
+    if (!syncRes.ok) {
+      alert("Failed to sync cart. Please try again.");
+      setIsPlacingOrder(false);
+      return;
+    }
+
+    // ---------------- 2️⃣ CREATE PRODUCT ORDER ----------------
+    const response = await fetch(`${VAPI_BASE}/api/orders/checkout/product/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        customer: {
+          fullName: formData.fullName,
+          email: formData.email,
+          phone: formData.phone,
+          address: `${formData.addressLine}, ${formData.apartment || ""}, ${formData.landmark || ""}`,
+          city: formData.city,
+          pincode: formData.pincode,
         },
-        body: JSON.stringify({
-          customer: {
-            fullName: formData.fullName,
-            email: formData.email,
-            phone: formData.phone,
-            address: `${formData.addressLine}, ${formData.apartment || ""}, ${formData.landmark || ""}`,
-            city: formData.city,
-            pincode: formData.pincode,
-          },
-          items: cartItems.map((item) => ({
-            id: item.product.id,
-            qty: item.quantity,
-          })),
-        }),
-      }
-    );
+        items: cartItems.map((item) => ({
+          id: item.product.id,
+          qty: item.quantity,
+        })),
+      }),
+    });
 
     const data = await response.json();
 
@@ -115,47 +134,49 @@ const handleSubmit = async (e: React.FormEvent) => {
       return;
     }
 
+    // 🔌 RAZORPAY SDK CHECK
     if (!(window as any).Razorpay) {
       alert("Razorpay SDK not loaded");
       return;
     }
 
+    // ---------------- 3️⃣ RAZORPAY PAYMENT ----------------
     const options = {
       key: data.key,
       amount: data.amount,
       currency: data.currency,
       name: "Basho by Shivangi",
       order_id: data.razorpay_order_id,
-
       modal: {
         ondismiss: () => setIsPlacingOrder(false),
       },
-
       handler: async function (response: any) {
-        const verifyRes = await fetch(
-          `${VAPI_BASE}/api/orders/payment/verify/`,
-          {
+        try {
+          const verifyRes = await fetch(`${VAPI_BASE}/api/orders/payment/verify/`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`, // ✅ JWT AGAIN
+              Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify(response),
-          }
-        );
+          });
+const verifyData = await verifyRes.json();
 
-        const verifyData = await verifyRes.json();
+if (!verifyRes.ok || verifyData.status !== "success") {
+  alert(verifyData.error || "Payment verification failed");
+  return;
+}
 
-        if (!verifyRes.ok || !verifyData.success) {
+// ✅ AUTO CLEAR CART (frontend state)
+clearCart();
+
+// ✅ SUCCESS PAGE
+router.push("/order-success");
+
+        } catch (err) {
+          console.error(err);
           alert("Payment verification failed");
-          return;
         }
-
-        // ✅ AUTO CLEAR CART
-        clearCart();
-
-        // ✅ SUCCESS PAGE
-        router.push("/order-success");
       },
     };
 
@@ -261,16 +282,18 @@ const handleSubmit = async (e: React.FormEvent) => {
                     Phone number
                   </label>
                   <input
-                    type="tel"
-                    id="phone"
-                    name="phone"
-                    pattern="[6-9][0-9]{9}"
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                    required
-                    placeholder="+91 xxxxxxxxxx"
-                    className="w-full px-4 py-3 bg-white border border-[#A8A29E]/30 rounded-sm text-[#563a13] placeholder:text-[#A8A29E] focus:outline-none focus:border-[#563a13] transition-colors"
-                  />
+  type="tel"
+  id="phone"
+  name="phone"
+  value={formData.phone}
+  onChange={handleInputChange}
+  required
+  placeholder="+91 9876543210 or 9876543210"
+  pattern="^(\+91)?[6-9][0-9]{9}$"
+  title="Enter a valid Indian phone number (e.g. 9876543210 or +919876543210)"
+  className="w-full px-4 py-3 bg-white border border-[#A8A29E]/30 rounded-sm text-[#563a13] placeholder:text-[#A8A29E] focus:outline-none focus:border-[#563a13] transition-colors"
+/>
+
                 </div>
               </div>
             </section>

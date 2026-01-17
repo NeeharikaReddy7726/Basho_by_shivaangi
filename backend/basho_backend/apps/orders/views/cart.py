@@ -131,3 +131,36 @@ def clear_cart(request):
     cart = get_or_create_cart(request)
     cart.items.all().delete()
     return Response({"message": "Cart cleared"})
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def sync_cart(request):
+    """
+    Receive frontend cart and sync it to backend DB for logged-in user.
+    Payload example:
+    {
+        "items": [
+            {"product_id": 1, "quantity": 2},
+            {"product_id": 5, "quantity": 1}
+        ]
+    }
+    """
+    data = request.data
+    items = data.get("items", [])
+
+    if not items:
+        return Response({"message": "No items to sync"}, status=400)
+
+    cart, _ = Cart.objects.get_or_create(user=request.user, is_active=True)
+    cart.items.all().delete()  # clear old cart
+
+    for item in items:
+        try:
+            product = Product.objects.get(id=item["product_id"])
+            qty = min(int(item.get("quantity", 1)), product.stock)
+            if qty > 0:
+                CartItem.objects.create(cart=cart, product=product, quantity=qty)
+        except Product.DoesNotExist:
+            continue
+
+    return Response({"message": "Cart synced", "cart_id": cart.id})
