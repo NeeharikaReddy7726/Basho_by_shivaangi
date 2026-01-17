@@ -508,42 +508,42 @@ useEffect(() => {
 </section>
 {/* ================= VIDEO TESTIMONIAL ================= */}
 {/* ================= VIDEO TESTIMONIAL ================= */}
-<section className="relative overflow-hidden bg-gradient-to-br from-[#f7f3ee] via-[#f1ebe2] to-[#f7f3ee] py-32 px-6">
-  <section className="bg-gradient-to-r from-[#f7f3ee] via-[#f1ebe2] to-[#f7f3ee] py-24 px-6"></section>
-  {/* Decorative clay glow circles */}
-  <div className="absolute -top-40 -left-40 w-[32rem] h-[32rem] bg-[#c97c5d]/25 rounded-full blur-[120px]" />
-  <div className="absolute bottom-0 -right-40 w-[30rem] h-[30rem] bg-[#8c5a3c]/25 rounded-full blur-[120px]" />
+<section className="relative overflow-hidden bg-gradient-to-br from-[#f7f3ee] via-[#f1ebe2] to-[#f7f3ee] py-20 lg:py-28 px-6">
 
-  {/* Flex container: stacked on mobile, row on lg+ */}
-  <div className="relative max-w-6xl mx-auto flex flex-col lg:flex-row gap-12 items-start px-4">
+  {/* Decorative clay glow circles */}
+  <div className="absolute -top-24 -left-24 w-[26rem] h-[26rem] bg-[#c97c5d]/25 rounded-full blur-[110px]" />
+  <div className="absolute bottom-0 -right-32 w-[28rem] h-[28rem] bg-[#8c5a3c]/25 rounded-full blur-[120px]" />
+
+  {/* Main container */}
+  <div className="relative max-w-7xl mx-auto flex flex-col lg:flex-row gap-16 items-center min-h-[65vh] px-4">
 
     {/* LEFT: TEXT */}
     <motion.div 
-      className="flex-1 order-1 relative"
+      className="flex-1 relative py-10"
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      transition={{ duration: 0.8 }}
+      transition={{ duration: 0.7 }}
     >
       {/* vertical clay line */}
-      <div className="absolute -left-6 top-2 h-20 w-[2px] bg-gradient-to-b from-transparent via-[var(--basho-terracotta)] to-transparent" />
+      <div className="absolute -left-6 top-2 h-24 w-[2px] bg-gradient-to-b from-transparent via-[var(--basho-terracotta)] to-transparent" />
 
-      <p className="tracking-[0.4em] text-xs text-[var(--basho-terracotta)] mb-6">
+      <p className="tracking-[0.35em] text-xs text-[var(--basho-terracotta)] mb-5">
         STUDIO EXPERIENCE
       </p>
 
-      <h2 className="text-4xl md:text-5xl text-[var(--basho-dark)] font-serif mb-7 leading-tight">
+      <h2 className="text-4xl md:text-5xl xl:text-6xl text-[var(--basho-dark)] font-serif mb-6 leading-tight">
         Voices from Basho
       </h2>
 
-      <p className="text-[var(--basho-teal)] leading-relaxed mb-10 max-w-lg text-lg">
+      <p className="text-[var(--basho-teal)] leading-relaxed mb-10 max-w-xl text-lg xl:text-xl">
         Our visitors describe Basho as more than a pottery studio —  
         it’s a space to slow down, reconnect, and create with intention.
       </p>
 
       <div className="relative pl-6 border-l border-[var(--basho-terracotta)]">
         <span className="absolute -left-[5px] top-1.5 w-2.5 h-2.5 bg-[var(--basho-terracotta)] rounded-full" />
-        <p className="italic text-[var(--basho-terracotta)] text-lg leading-relaxed">
+        <p className="italic text-[var(--basho-terracotta)] text-lg xl:text-xl leading-relaxed">
           “The experience felt grounding, calm, and deeply personal.”
         </p>
       </div>
@@ -551,13 +551,13 @@ useEffect(() => {
 
     {/* RIGHT: VIDEO */}
     <motion.div 
-      className="flex-1 order-2 w-full aspect-video max-h-[400px] lg:max-h-[720px] rounded-2xl overflow-hidden bg-black shadow-[0_30px_90px_-20px_rgba(0,0,0,0.45)] group"
+      className="flex-1 w-full aspect-video min-h-[320px] sm:min-h-[400px] lg:min-h-[540px] max-h-[720px] rounded-3xl overflow-hidden bg-black shadow-[0_35px_90px_-20px_rgba(0,0,0,0.45)]"
       initial={{ opacity: 0, y: 40, scale: 0.95 }}
       whileInView={{ opacity: 1, y: 0, scale: 1 }}
       viewport={{ once: true }}
-      transition={{ duration: 0.8, delay: 0.2 }}
+      transition={{ duration: 0.7, delay: 0.15 }}
     >
-      {/* soft cinematic glass overlay */}
+      {/* glass light overlay */}
       <div className="absolute inset-0 bg-gradient-to-tr from-[#c97c5d]/10 via-transparent to-[#8c5a3c]/10 pointer-events-none z-10" />
 
       <video
@@ -566,15 +566,15 @@ useEffect(() => {
         muted
         controls
         playsInline
-        preload="none"
-        className="w-full h-full object-contain rounded-2xl"
+        preload="metadata"
+        className="w-full h-full object-contain rounded-3xl"
       />
     </motion.div>
 
   </div>
 
-  {/* Optional: subtle bottom decoration */}
-  <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[200px] h-[2px] bg-[var(--basho-terracotta)] rounded-full opacity-30" />
+  {/* bottom clay divider */}
+  <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-[180px] h-[2px] bg-[var(--basho-terracotta)] rounded-full opacity-30" />
 </section>
 
     {/* ================= SEGMENT 3 : PHILOSOPHY ================= */}
