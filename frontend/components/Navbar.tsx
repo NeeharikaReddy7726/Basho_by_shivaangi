@@ -2,88 +2,150 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-
 import { CartIcon } from "@/components/shared/CartIcon";
 import { logout, isLoggedIn, getUsername } from "@/lib/auth";
+import { refreshAccessToken } from "@/lib/auth";
+import MusicSettingsModal from "@/components/MusicSettingsModal";
 
-import { Eye, EyeOff } from "lucide-react";
 
+const DEFAULT_AVATAR = "/image_aish/avatars/p1.png";
 
 
 export default function Navbar() {
+  const [authReady, setAuthReady] = useState(false);
   const router = useRouter();
-  const pathname = usePathname();
-
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-const [showNewPassword, setShowNewPassword] = useState(false);
-
-
   const [loggedIn, setLoggedIn] = useState(false);
   const [username, setUsername] = useState<string | null>(null);
   const [showLogoutPopup, setShowLogoutPopup] = useState(false);
-
   const [showAvatarModal, setShowAvatarModal] = useState(false);
-
-  const [showChangePassword, setShowChangePassword] = useState(false);
-const [currentPassword, setCurrentPassword] = useState("");
-const [newPassword, setNewPassword] = useState("");
-const [passwordError, setPasswordError] = useState("");
-
-
-  
-
-const [uploading, setUploading] = useState(false);
-
-const [imageSrc, setImageSrc] = useState<string | null>(null);
-const [crop, setCrop] = useState({ x: 0, y: 0 });
-const [zoom, setZoom] = useState(1);
-const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
-const [showCropModal, setShowCropModal] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [profileImage, setProfileImage] = useState<string>(DEFAULT_AVATAR);
+  const [showMusicSettings, setShowMusicSettings] = useState(false);
 
 
 
-const resetSensitiveUI = () => {
-  setShowChangePassword(false);
-  setCurrentPassword("");
-  setNewPassword("");
-  setPasswordError("");
-  
+
+/* ================= AUTH REFRESH ================= */
+const refreshAuth = async () => {
+  const logged = isLoggedIn();
+  const user = getUsername();
+
+  setLoggedIn(logged);
+  setUsername(user);
+
+  if (!logged) {
+    setProfileImage(DEFAULT_AVATAR);
+    return;
+  }
+
+  try {
+  let token = localStorage.getItem("accessToken");
+
+  let res = await fetch("http://127.0.0.1:8000/api/accounts/me/", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (res.status === 401) {
+    token = await refreshAccessToken();
+    if (!token) throw new Error("Auth failed");
+
+    res = await fetch("http://127.0.0.1:8000/api/accounts/me/", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  }
+
+  if (!res.ok) throw new Error("Unauthorized");
+
+  const data = await res.json();
+
+  setProfileImage(
+    data.avatar
+      ? `/image_aish/avatars/${data.avatar}`
+      : DEFAULT_AVATAR
+  );
+} catch {
+  setProfileImage(DEFAULT_AVATAR);
+}
 };
 
 
 
-  /* ================= AUTH REFRESH ================= */
-  const refreshAuth = () => {
-    setLoggedIn(isLoggedIn());
-    setUsername(getUsername());
-
-    // 🔐 reset sensitive popups on auth refresh
-  resetSensitiveUI();
-  };
-
-  useEffect(() => {
-    refreshAuth();
-    resetSensitiveUI();
-  }, [pathname]);
 
   const handleLogout = () => {
-    logout();
-    resetSensitiveUI();
+  logout();
+  setUsername(null);
+  setLoggedIn(false);
+  router.replace("/");
+};
+
+useEffect(() => {
+  if (!authReady) return;
+
+  const token = localStorage.getItem("accessToken");
+  if (!token) return;
+
+  refreshAuth();
+}, [authReady]);
+
+
+
+useEffect(() => {
+  const handleResize = () => setIsMobile(window.innerWidth < 768);
+  handleResize();
+  window.addEventListener("resize", handleResize);
+  return () => window.removeEventListener("resize", handleResize);
+}, []);
+
+
+
+useEffect(() => {
+  if (typeof window === "undefined") return;
+
+  // wait until browser & localStorage are fully ready
+  const id = requestAnimationFrame(() => {
+    setAuthReady(true);
+  });
+
+  return () => cancelAnimationFrame(id);
+}, []);
+
+
+
+useEffect(() => {
+  if (!authReady) return;
+
+  const syncAuth = () => {
     refreshAuth();
-    router.replace("/");
   };
+
+  window.addEventListener("focus", syncAuth);
+  window.addEventListener("storage", syncAuth);
+
+  // ✅ custom event for same-tab auth updates
+  window.addEventListener("auth-changed", syncAuth);
+
+  return () => {
+    window.removeEventListener("focus", syncAuth);
+    window.removeEventListener("storage", syncAuth);
+    window.removeEventListener("auth-changed", syncAuth);
+  };
+}, [authReady]);
+
 
   /* ================= PROFILE MENU ================= */
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
-  const [profileImage, setProfileImage] = useState(
-    typeof window !== "undefined"
-      ? localStorage.getItem("profileImage") || "/default-avatar.png"
-      : "/default-avatar.png"
-  );
+
+
+
 
   /* ================= CHANGE USERNAME ================= */
   const [showChangeUsername, setShowChangeUsername] = useState(false);
@@ -91,151 +153,88 @@ const resetSensitiveUI = () => {
   const [usernameError, setUsernameError] = useState("");
 
   const handleChangeUsername = async () => {
-    setUsernameError("");
+  setUsernameError("");
 
-    if (!newUsername.trim()) {
-      setUsernameError("Username cannot be empty");
-      return;
-    }
-
-    const res = await fetch(
-      "http://127.0.0.1:8000/api/accounts/change-username/",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-        },
-        body: JSON.stringify({ username: newUsername }),
-      }
-    );
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      setUsernameError(data.error || "Username already taken");
-      return;
-    }
-
-    // ✅ Update UI instantly
-    localStorage.setItem("username", data.username);
-    setUsername(data.username);
-
-    setShowChangeUsername(false);
-    setNewUsername("");
-  };
-
-/* ================= CHANGE PASSWORD ================= */
-  const handleChangePassword = async () => {
-  setPasswordError("");
-
-  if (!currentPassword || !newPassword) {
-    setPasswordError("All fields are required");
+  if (!newUsername.trim()) {
+    setUsernameError("Username cannot be empty");
     return;
   }
 
   const res = await fetch(
-    "http://127.0.0.1:8000/api/accounts/change-password/",
+    "http://127.0.0.1:8000/api/accounts/change-username/",
     {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
       },
-      body: JSON.stringify({
-        current_password: currentPassword,
-        new_password: newPassword,
-      }),
+      body: JSON.stringify({ username: newUsername }),
     }
   );
 
   const data = await res.json();
 
   if (!res.ok) {
-    setPasswordError(data.error || "Failed to change password");
+    setUsernameError(data.error || "Username already taken");
     return;
   }
 
- 
+  localStorage.setItem("username", data.username);
+  setUsername(data.username);
 
-  setShowChangePassword(false);
-  setCurrentPassword("");
-  setNewPassword("");
+  setShowChangeUsername(false);
+  setNewUsername("");
 };
 
 
 
-  const uploadCustomAvatar = async (file?: File) => {
-  if (!file) return;
 
-  // ✅ SIZE VALIDATION (2MB)
-  const MAX_SIZE = 2 * 1024 * 1024; // 2MB
-  if (file.size > MAX_SIZE) {
-    alert("Image size must be less than 2 MB");
+const saveAvatar = async (url: string) => {
+  const avatarName = url.split("/").pop();
+
+  if (!avatarName) {
+    alert("Invalid avatar");
     return;
   }
-
-  // ✅ TYPE VALIDATION
-  const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
-  if (!allowedTypes.includes(file.type)) {
-    alert("Only JPG, PNG, or WEBP images are allowed");
-    return;
-  }
-
-  const [profileImage, setProfileImage] = useState(
-  typeof window !== "undefined"
-    ? localStorage.getItem("profileImage") || "/image_aish/avatars/p1.png"
-    : "/image_aish/avatars/p1.png"
-);
-
-
-  const formData = new FormData();
-  formData.append("image", file);
-
-  setUploading(true);
 
   try {
     const res = await fetch(
-      "http://127.0.0.1:8000/api/accounts/upload-profile-picture/",
+      "http://127.0.0.1:8000/api/accounts/set-avatar/",
       {
         method: "POST",
         headers: {
+          "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
         },
-        body: formData,
+        body: JSON.stringify({ avatar: avatarName }),
       }
     );
 
     const data = await res.json();
 
     if (!res.ok) {
-      alert(data.error || "Upload failed");
+      alert(data.error || "Failed to set profile picture");
       return;
     }
 
-    // ✅ SAVE RESULT
-    setProfileImage(data.profile_image);
-    localStorage.setItem("profileImage", data.profile_image);
+    // ✅ Persist visually
+    setProfileImage(`/image_aish/avatars/${data.avatar}`);
+
     setShowAvatarModal(false);
-  } finally {
-    setUploading(false);
+  } catch {
+    alert("Failed to update profile picture");
   }
 };
 
 
-const saveAvatar = (url: string) => {
-  setProfileImage(url);
-  localStorage.setItem("profileImage", url);
-  setShowAvatarModal(false);
-};
 
 
-  return (
+return (
     <header className="sticky top-0 z-50 bg-white border-b border-[var(--basho-divider)]">
       <div className="max-w-7xl mx-auto px-8 h-20 flex items-center justify-between">
 
         {/* LOGO */}
-        <Link href="/" className="flex items-center h-10 overflow-hidden">
+        <Link href="/" className="flex items-center h-10 overflow-hidden -ml-4">
           <Image
             src="/image_aish/basho_logo.jpg"
             alt="Basho by Shivangi"
@@ -245,16 +244,39 @@ const saveAvatar = (url: string) => {
           />
         </Link>
 
+        {/* MOBILE MENU BUTTON */}
+          {isMobile && (
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden text-[#652810] text-2xl"
+            >
+              ☰
+            </button>
+          )}
+
         <div className="hidden md:flex items-center gap-6">
 
+          
+
+
           {/* NAV */}
-          <nav className="flex items-center gap-8 text-sm tracking-widest uppercase text-[#652810]">
+          {/* NAV */}
+<nav className="flex items-center gap-6 text-[13px] tracking-[0.18em] uppercase text-[#652810]">
+
+
             <Link href="/shop">SHOP</Link>
+            <Link href="/custom-orders" className="text-center leading-tight">
+              <span className="block">CUSTOM</span>
+              <span className="block">ORDER</span>
+            </Link>
             <Link href="/workshops">WORKSHOPS</Link>
             <Link href="/experiences">EXPERIENCES</Link>
             <Link href="/studio">STUDIO</Link>
             <Link href="/gallery">GALLERY</Link>
-            <Link href="/about">ABOUT US</Link>
+            <Link href="/about" className="text-center leading-tight">
+              <span className="block">ABOUT</span>
+              <span className="block">US</span>
+            </Link>
             <Link href="/corporate">CORPORATE</Link>
           </nav>
 
@@ -286,17 +308,27 @@ const saveAvatar = (url: string) => {
                       >
                          Change Username
                       </button>
+
+
+                      <button
+  className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded"
+  onClick={() => {
+    setShowProfileMenu(false);
+    router.push("/profile");
+  }}
+>
+  View Profile
+</button>
+
 <button
   className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded"
   onClick={() => {
     setShowProfileMenu(false);
-    setShowChangePassword(true);
+    setShowMusicSettings(true);
   }}
 >
-  Change Password
+  BGM Setting
 </button>
-
-
 
 
 
@@ -311,6 +343,10 @@ const saveAvatar = (url: string) => {
 >
    Change Profile Picture
 </button>
+
+
+
+
 
 
                       <hr className="my-2" />
@@ -403,93 +439,6 @@ const saveAvatar = (url: string) => {
         )}
       </AnimatePresence>
 
-{/* ================= CHANGE PASSWORD MODAL ================= */}
-    <AnimatePresence>
-      {showChangePassword && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-        >
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.9, opacity: 0 }}
-            className="bg-white rounded-xl p-6 w-[90%] max-w-sm"
-          >
-            <h3 className="text-lg font-semibold mb-4 text-[#652810]">
-              Change Password
-            </h3>
-
-            <div className="relative mb-3">
-  <input
-    type={showCurrentPassword ? "text" : "password"}
-    placeholder="Current password"
-    value={currentPassword}
-    onChange={(e) => setCurrentPassword(e.target.value)}
-    className="w-full border rounded px-4 py-2 pr-10 text-[#652810]"
-  />
-
-  <button
-    type="button"
-    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#a49a8a] hover:text-[#652810]"
-  >
-    {showCurrentPassword ? <Eye size={18} /> : <EyeOff size={18} />}
-  </button>
-</div>
-
-
-            <div className="relative mb-3">
-  <input
-    type={showNewPassword ? "text" : "password"}
-    placeholder="New password"
-    value={newPassword}
-    onChange={(e) => setNewPassword(e.target.value)}
-    className="w-full border rounded px-4 py-2 pr-10 text-[#652810]"
-  />
-
-  <button
-    type="button"
-    onClick={() => setShowNewPassword(!showNewPassword)}
-    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#a49a8a] hover:text-[#652810]"
-  >
-    {showNewPassword ? <Eye size={18} /> : <EyeOff size={18} />}
-  </button>
-</div>
-
-
-            {passwordError && (
-              <p className="text-red-600 text-sm mb-2">
-                {passwordError}
-              </p>
-            )}
-
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => {
-                  resetSensitiveUI();
-                }}
-                className="px-4 py-2 border rounded text-[#652810]"
-              >
-                Cancel
-              </button>
-
-
-              <button
-                onClick={handleChangePassword}
-                className="px-4 py-2 bg-[#652810] text-white rounded"
-              >
-                Save
-              </button>
-            </div>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
-
-
 
 {/* ================= LOGOUT CONFIRMATION ================= */}
       <AnimatePresence>
@@ -543,15 +492,10 @@ const saveAvatar = (url: string) => {
         Choose Profile Picture
       </h3>
 
-      {/* 🔄 LOADING SPINNER */}
-      {uploading && (
-        <div className="flex justify-center items-center py-8">
-          <div className="w-10 h-10 border-4 border-[#652810] border-t-transparent rounded-full animate-spin" />
-        </div>
-      )}
+     
 
       {/* 🖼 PRESET AVATARS — 5 PER ROW */}
-      {!uploading && (
+      
   <div className="grid grid-cols-5 gap-4 mb-4">
     {[
       "/image_aish/avatars/p1.png",
@@ -580,7 +524,7 @@ const saveAvatar = (url: string) => {
       />
     ))}
   </div>
-)}
+
 
 
 
@@ -591,14 +535,68 @@ const saveAvatar = (url: string) => {
       <button
         className="mt-4 w-full border rounded py-2 text-[#652810]"
         onClick={() => setShowAvatarModal(false)}
-        disabled={uploading}
       >
+
         Cancel
       </button>
 
     </div>
   </div>
 )}
+
+{/* ================= MOBILE NAV MENU ================= */}
+<AnimatePresence>
+  {isMobile && mobileMenuOpen && (
+    <motion.div
+      initial={{ height: 0, opacity: 0 }}
+      animate={{ height: "auto", opacity: 1 }}
+      exit={{ height: 0, opacity: 0 }}
+      transition={{ duration: 0.3 }}
+      className="md:hidden bg-white border-t border-[var(--basho-divider)]"
+    >
+      <nav className="flex flex-col px-8 py-6 gap-4 text-sm tracking-widest uppercase text-[#652810]">
+        <Link href="/shop" onClick={() => setMobileMenuOpen(false)}>SHOP</Link>
+        <Link href="/workshops" onClick={() => setMobileMenuOpen(false)}>WORKSHOPS</Link>
+        <Link href="/experiences" onClick={() => setMobileMenuOpen(false)}>EXPERIENCES</Link>
+        <Link href="/studio" onClick={() => setMobileMenuOpen(false)}>STUDIO</Link>
+        <Link href="/gallery" onClick={() => setMobileMenuOpen(false)}>GALLERY</Link>
+        <Link href="/about" onClick={() => setMobileMenuOpen(false)}>ABOUT US</Link>
+        <Link href="/corporate" onClick={() => setMobileMenuOpen(false)}>CORPORATE</Link>
+
+        <hr className="my-4" />
+
+        {!loggedIn ? (
+          <>
+            <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
+              Login
+            </Link>
+            <Link href="/register" onClick={() => setMobileMenuOpen(false)}>
+              Register
+            </Link>
+          </>
+        ) : (
+          <button
+            onClick={() => {
+              setMobileMenuOpen(false);
+              setShowLogoutPopup(true);
+            }}
+            className="text-left text-red-600"
+          >
+            Logout
+          </button>
+        )}
+      </nav>
+    </motion.div>
+  )}
+</AnimatePresence>
+
+{/* ================= MUSIC SETTINGS MODAL ================= */}
+<MusicSettingsModal
+  open={showMusicSettings}
+  onClose={() => setShowMusicSettings(false)}
+/>
+
+
 
     </header>
   );

@@ -1,7 +1,13 @@
 from rest_framework import serializers
-from .models import Booking, Experience, StudioBooking, UpcomingEvent
-from .models import Workshop, WorkshopSlot, WorkshopRegistration
-from .models import ExperienceSlot
+from .models import (
+    Booking, 
+    Experience, 
+    StudioBooking, 
+    UpcomingEvent,
+    Workshop, 
+    WorkshopSlot, 
+    WorkshopRegistration,
+    ExperienceSlot)
 
 class BookingSerializer(serializers.ModelSerializer):
     class Meta:
@@ -28,34 +34,40 @@ class BookingSerializer(serializers.ModelSerializer):
                 "slot": "Please select a valid time slot."
             })
 
-        # Check slot active
         if not slot.is_active:
             raise serializers.ValidationError({
                 "slot": "This slot is no longer available."
             })
 
-        # Min participants check
-        if people < slot.min_participants:
-            raise serializers.ValidationError({
-                "number_of_people": f"Minimum {slot.min_participants} participants required."
-            })
+        experience = slot.experience
 
-        # Capacity check
-        remaining = slot.max_participants - slot.booked_participants
-        if people > remaining:
+        # ✅ Booking-level rules (from Experience)
+        if experience.min_participants is not None:
+            if people < experience.min_participants:
+                raise serializers.ValidationError({
+                    "number_of_people": f"Minimum {experience.min_participants} participants required."
+                })
+
+        if experience.max_participants is not None:
+            if people > experience.max_participants:
+                raise serializers.ValidationError({
+                    "number_of_people": f"Maximum {experience.max_participants} participants allowed per booking."
+                })
+
+
+        # ✅ Slot capacity rule
+        available = slot.total_slots - slot.booked_slots
+        if people > available:
             raise serializers.ValidationError({
-                "number_of_people": f"Only {remaining} spots left for this slot."
+                "number_of_people": f"Only {available} slots left for this time."
             })
 
         return data
 
-
 class ExperienceSlotSerializer(serializers.ModelSerializer):
     startTime = serializers.TimeField(source="start_time")
     endTime = serializers.TimeField(source="end_time")
-    minParticipants = serializers.IntegerField(source="min_participants")
-    maxParticipants = serializers.IntegerField(source="max_participants")
-    bookedParticipants = serializers.IntegerField(source="booked_participants")
+    availableSlots = serializers.SerializerMethodField()
 
     class Meta:
         model = ExperienceSlot
@@ -64,11 +76,11 @@ class ExperienceSlotSerializer(serializers.ModelSerializer):
             "date",
             "startTime",
             "endTime",
-            "minParticipants",
-            "maxParticipants",
-            "bookedParticipants",
+            "availableSlots",
         ]
 
+    def get_availableSlots(self, obj):
+        return max(0, obj.total_slots - obj.booked_slots)
 
 class StudioBookingSerializer(serializers.ModelSerializer):
     class Meta:
@@ -145,3 +157,30 @@ class WorkshopRegistrationSerializer(serializers.ModelSerializer):
     class Meta:
         model = WorkshopRegistration
         fields = "__all__"
+
+class ExperienceSerializer(serializers.ModelSerializer):
+    slots = ExperienceSlotSerializer(many=True, read_only=True)
+    participants = serializers.SerializerMethodField()
+    image = serializers.JSONField()
+
+    class Meta:
+        model = Experience
+        fields = [
+            "id",
+            "title",
+            "tagline",
+            "description",
+            "duration",
+            "people",
+            "price",
+            "image",
+            "is_active",
+            "participants",
+            "slots",
+        ]
+
+    def get_participants(self, obj):
+        return {
+            "min": obj.min_participants,
+            "max": obj.max_participants,
+        }

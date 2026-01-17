@@ -3,27 +3,41 @@
 import { useEffect, useState } from "react";
 import styles from "./ExperienceSection.module.css";
 
+/* =====================
+   TYPES
+===================== */
 interface Slot {
   id: number;
   date: string;
   startTime: string;
   endTime: string;
-  minParticipants: number;
-  maxParticipants: number;
-  bookedParticipants: number;
+  availableSlots: number;
 }
+
+interface ExperienceImage {
+  url: string;
+  alt?: string;
+}
+
 
 interface Props {
   experienceId: number;
   title: string;
   tagline: string;
   description: string;
-  image: string;
+  image: ExperienceImage[];
   duration: string;
   people: string;
   price: string;
   includes: string[];
   reverse?: boolean;
+  onBookingSuccess: () => void;
+}
+
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
 }
 
 export default function ExperienceSection({
@@ -37,10 +51,11 @@ export default function ExperienceSection({
   price,
   includes,
   reverse = false,
+  onBookingSuccess,
 }: Props) {
   const [open, setOpen] = useState(false);
 
-  // form state
+  /* FORM STATE */
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -48,31 +63,51 @@ export default function ExperienceSection({
   const [slots, setSlots] = useState<Slot[]>([]);
   const [slotId, setSlotId] = useState<number | null>(null);
   const [participants, setParticipants] = useState(2);
+  const [submitting, setSubmitting] = useState(false);
+  const [availableDates, setAvailableDates] = useState<string[]>([]);
 
-  // OTP flow
-  const [bookingId, setBookingId] = useState<number | null>(null);
-  const [otp, setOtp] = useState("");
-  const [step, setStep] = useState<"form" | "otp" | "confirmed">("form");
+  // const [step, setStep] = useState<"form" | "confirmed">("form");
 
-  /* ---------------- FETCH SLOTS ---------------- */
+  /* =====================
+     FETCH SLOTS
+  ===================== */
   useEffect(() => {
-    if (!open) return;
+  if (!open) return;
 
-    fetch(
-      `http://localhost:8000/api/experiences/${experienceId}/slots/`
-    )
-      .then((res) => res.json())
-      .then(setSlots)
-      .catch(() => setSlots([]));
-  }, [open, experienceId]);
+  fetch(
+    `http://127.0.0.1:8000/api/experiences/${experienceId}/available-dates/`
+  )
+    .then((res) => res.json())
+    .then(setAvailableDates)
+    .catch(() => setAvailableDates([]));
+}, [open, experienceId]);
 
-  /* ---------------- CREATE BOOKING ---------------- */
+  useEffect(() => {
+  if (!date) {
+    setSlots([]);
+    return;
+  }
+
+  fetch(
+    `http://127.0.0.1:8000/api/experiences/${experienceId}/slots-by-date/?date=${date}`
+  )
+    .then((res) => res.json())
+    .then(setSlots)
+    .catch(() => setSlots([]));
+}, [date, experienceId]);
+
+  /* =====================
+     CREATE BOOKING
+  ===================== */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const res = await fetch(
-      "http://localhost:8000/api/experiences/book/",
-      {
+    // ✅ PREVENT DOUBLE SUBMIT
+    if (submitting) return;
+    setSubmitting(true);
+
+    try {
+      const res = await fetch("http://localhost:8000/api/experiences/book/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -84,62 +119,155 @@ export default function ExperienceSection({
           booking_date: date,
           number_of_people: participants,
         }),
+      });
+
+       let data;
+        try {
+          data = await res.json();
+        } catch {
+          alert("This slot is fully booked. Please choose another slot.");
+          setSubmitting(false);
+          return;
+        }
+
+      console.log("BOOKING RESPONSE:", data);
+
+      if (!res.ok) {
+        alert(data?.slot || "Booking failed. Please try another slot.");
+        setSubmitting(false);
+        return;
       }
-    );
 
-    if (!res.ok) {
-      alert("Booking failed ❌");
-      return;
+
+      // 2️⃣ OPEN RAZORPAY
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        amount: data.amount * 100,
+        currency: "INR",
+        name: "Basho by Shivangi",
+        description: title,
+        order_id: data.razorpay_order_id,
+
+        handler: async function (response: any) {
+          const verifyRes = await fetch(
+            "http://127.0.0.1:8000/api/experiences/verify-payment/",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_signature: response.razorpay_signature,
+              }),
+            }
+          );
+
+if (!verifyRes.ok) {
+  await fetch("http://127.0.0.1:8000/api/experiences/release-slot/", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      booking_id: data.booking_id,
+    }),
+  });
+
+  setSubmitting(false);
+  alert("Payment failed. Slot released.");
+  return;
+}
+
+
+          // ✅ show success globally
+          onBookingSuccess();
+
+        // ✅ REFRESH SLOTS AFTER BOOKING
+        if (date) {
+          fetch(
+            `http://127.0.0.1:8000/api/experiences/${experienceId}/slots-by-date/?date=${date}`
+          )
+            .then(res => res.json())
+            .then(setSlots);
+        }
+
+        // ✅ 2. CLOSE MODAL IMMEDIATELY
+         setOpen(false);
+
+          // ✅ 3. RESET FORM (background)
+          setSubmitting(false);
+          setName("");
+          setPhone("");
+          setEmail("");
+          setDate("");
+          setSlotId(null);
+          setParticipants(2);
+        },
+
+        // 👇 USER CLOSES RAZORPAY WITHOUT PAYING
+      modal: {
+        ondismiss: async () => {
+          await fetch("http://127.0.0.1:8000/api/experiences/release-slot/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              booking_id: data.booking_id,
+            }),
+          });
+
+      if (date) {
+        fetch(
+          `http://127.0.0.1:8000/api/experiences/${experienceId}/slots-by-date/?date=${date}`
+        )
+          .then(res => res.json())
+          .then(setSlots);
+      }
+      setSubmitting(false);
+    },
+  },
+
+
+        prefill: {
+          name,
+          email,
+          contact: phone,
+        },
+
+        theme: {
+          color: "#8B6F47",
+        },
+      };
+
+      const razorpay = new (window as any).Razorpay(options);
+      razorpay.open();
+    } catch (err) {
+      console.error(err);
+      setSubmitting(false); // ❌ unexpected error
+      alert("Something went wrong ❌");
     }
-
-    const data = await res.json();
-    setBookingId(data.booking_id);
-    setStep("otp");
   };
-
-  /* ---------------- CONFIRM OTP ---------------- */
-const confirmOtp = async () => {
-  console.log("BOOKING ID:", bookingId);
-  console.log("OTP ENTERED:", otp);
-
-  if (!otp.trim() || !bookingId) {
-    alert("Please enter OTP");
-    return;
-  }
-
-  const res = await fetch(
-    "http://localhost:8000/api/experiences/book/confirm/",
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        booking_id: bookingId,
-        otp: otp.trim(),
-      }),
-    }
-  );
-
-  if (!res.ok) {
-    alert("Invalid or expired OTP ❌");
-    return;
-  }
-
-  setStep("confirmed");
-};
-
-
 
   return (
     <>
+      {/* Razorpay Script */}
+      <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
       <section className={`${styles.section} ${reverse ? styles.reverse : ""}`}>
         <div className={styles.imageWrapper}>
-          <img src={image} alt={title} />
-        </div>
+  {image && image.length > 0 ? (
+    <img
+      src={image[0].url}// first image
+      alt={image[0].alt || title}
+    />
+  ) : (
+    <img
+      src="/images/default.png"
+      alt={title}
+    />
+  )}
+</div>
 
         <div className={styles.content}>
           <span className={styles.tagline}>♡ {tagline}</span>
           <h2 className={styles.title}>{title}</h2>
-
           <p className={styles.description}>{description}</p>
 
           <div className={styles.meta}>
@@ -154,7 +282,9 @@ const confirmOtp = async () => {
         </div>
       </section>
 
-      {/* ---------------- MODAL ---------------- */}
+      {/* =====================
+          MODAL
+      ===================== */}
       {open && (
         <div className={styles.modalOverlay}>
           <div className={styles.modal}>
@@ -162,117 +292,93 @@ const confirmOtp = async () => {
               ✕
             </button>
 
-            {/* STEP 1: FORM */}
-            {step === "form" && (
-              <>
-                <h3 className={styles.modalTitle}>Book Your Experience</h3>
+            <>
+              <h3 className={styles.modalTitle}>Book Your Experience</h3>
 
-                <form className={styles.form} onSubmit={handleSubmit}>
-                  <input
-                    type="text"
-                    placeholder="Full Name"
-                    required
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                  />
-
-                  <input
-                    type="tel"
-                    placeholder="Phone Number"
-                    required
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                  />
-
-                  <input
-                    type="email"
-                    placeholder="Email Address"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
-
-                  <input
-                    type="date"
-                    required
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                  />
-
-                  <input
-                    type="number"
-                    min={1}
-                    placeholder="Number of Participants"
-                    value={participants}
-                    onChange={(e) =>
-                      setParticipants(Number(e.target.value))
-                    }
-                  />
-
-                  <select
-                    required
-                    value={slotId ?? ""}
-                    onChange={(e) => setSlotId(Number(e.target.value))}
-                  >
-                    <option value="">Select Time Slot</option>
-                    {slots.map((slot) => (
-                      <option key={slot.id} value={slot.id}>
-                        {slot.startTime} – {slot.endTime} (
-                        {slot.maxParticipants -
-                          slot.bookedParticipants}{" "}
-                        spots left)
-                      </option>
-                    ))}
-                  </select>
-
-                  <button type="submit" className={styles.submit}>
-                    Continue
-                  </button>
-                </form>
-              </>
-            )}
-
-            {/* STEP 2: OTP */}
-            {step === "otp" && (
-              <>
-                <h3>Confirm Booking</h3>
-                <p>Enter the OTP sent to your email</p>
-
+              <form className={styles.form} onSubmit={handleSubmit}>
                 <input
                   type="text"
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value)}
-                  placeholder="Enter OTP"
+                  placeholder="Full Name"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
                 />
 
-                <button
-                  onClick={confirmOtp}
-                  className={styles.submit}
-                  disabled={!otp.trim() || !bookingId}
+                <input
+                  type="tel"
+                  placeholder="Phone Number"
+                  required
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                />
+
+                <input
+                  type="email"
+                  placeholder="Email Address"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+
+                <input
+                  type="date"
+                  required
+                  value={date}
+                  onChange={(e) => {
+                    setDate(e.target.value);
+                    setSlotId(null);
+                  }}
+                  min={availableDates[0]}
+                  className={styles.input}
+                />
+
+
+                <input
+                  type="number"
+                  min={1}
+                  placeholder="Number of Participants"
+                  value={participants}
+                  onChange={(e) => setParticipants(Number(e.target.value))}
+                />
+
+                <select
+                  required
+                  value={slotId ?? ""}
+                  onChange={(e) => setSlotId(Number(e.target.value))}
                 >
-                  Verify OTP
+                  <option value="">Select Time Slot</option>
+
+                  {slots.map((slot) => (
+                    <option
+                      key={slot.id}
+                      value={slot.id}
+                      disabled={slot.availableSlots <= 0}
+                    >
+                      {slot.startTime} – {slot.endTime} (
+                      {slot.availableSlots > 0
+                        ? `${slot.availableSlots} slots left`
+                        : "Fully Booked"}
+                      )
+                    </option>
+                  ))}
+                </select>
+
+                  {slots.length > 0 &&
+                    slots.every((slot) => slot.availableSlots <= 0) && (
+                      <p className={styles.fullNotice}>
+                        All slots are fully booked for this date.
+                      </p>
+                  )}
+
+                <button
+                  type="submit"
+                  className={styles.submit}
+                  disabled={submitting}
+                >
+                  {submitting ? "Processing..." : "Proceed to Payment"}
                 </button>
-
-              </>
-            )}
-
-            {/* STEP 3: CONFIRMED */}
-            {step === "confirmed" && (
-              <>
-                <h3>Booking Confirmed 🎉</h3>
-                <p>Your experience has been successfully booked.</p>
-
-                {/* PAYMENT PLACEHOLDER */}
-                {/* 
-                  PAYMENT INTEGRATION PLACEHOLDER
-                  Razorpay / Stripe will be added by payments team
-                  booking_id should be passed to gateway
-                */}
-                <button disabled className={styles.submit}>
-                  Proceed to Payment
-                </button>
-              </>
-            )}
+              </form>
+            </>
           </div>
         </div>
       )}

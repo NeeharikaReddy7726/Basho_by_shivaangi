@@ -4,23 +4,41 @@ from .views import (
     CreateStudioBookingView,
     ListUpcomingEventsView,
     ListWorkshopsView,
+    ReleaseExperienceSlotView,
     WorkshopDetailView,
     ListWorkshopSlotsView,
     CreateWorkshopRegistrationView,
     ListExperienceSlotsView,
-    ConfirmBookingView,
+    ListExperiencesView,
+    ListExperienceAvailableDatesView,
+    ListExperienceSlotsByDateView,
+    VerifyExperiencePaymentView  # ✅ ADD THIS
 )
+
+
 
 urlpatterns = [
     # Experiences
     path("book/", CreateBookingView.as_view(), name="create-booking"),
-    path("book/confirm/", ConfirmBookingView.as_view(), name="confirm-booking"),
+    path("verify-payment/", VerifyExperiencePaymentView.as_view()),
+    #path("book/confirm/", ConfirmBookingView.as_view(), name="confirm-booking"),
     path(
         "<int:experience_id>/slots/",
         ListExperienceSlotsView.as_view(),
         name="experience-slots",
     ),
+    path("", ListExperiencesView.as_view(), name="list-experiences"),
+    path("release-slot/", ReleaseExperienceSlotView.as_view()),
+    path("<int:experience_id>/available-dates/", ListExperienceAvailableDatesView.as_view(), name="experience-available-dates"),
+    path("<int:experience_id>/slots-by-date/", ListExperienceSlotsByDateView.as_view(), name="experience-slots-by-date"),
+    path(
+    "<int:experience_id>/available-dates/",
+    ListExperienceAvailableDatesView.as_view(),),
 
+    path(
+        "<int:experience_id>/slots-by-date/",
+        ListExperienceSlotsByDateView.as_view(),
+    ),
     # Studio
     path("studio-book/", CreateStudioBookingView.as_view(), name="create-studio-booking"),
 

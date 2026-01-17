@@ -29,23 +29,35 @@ export default function ProductDetailPage() {
   });
 
   const { addToCart } = useCart();
+  const [loading, setLoading] = useState(true); // ✅ ADD
+
  
    // ✅ FETCH PRODUCT
-  useEffect(() => {
-    if (!productId) return;
+ useEffect(() => {
+  if (!productId) return;
 
-    fetchProductById(productId).then(setProduct);
+  setLoading(true);
 
-    fetchProducts().then((allProducts) => {
-      setRelatedProducts(
-        allProducts
-          .filter(
-            (p) => p.category === product?.category && p.id !== productId
-          )
-          .slice(0, 3)
-      );
+  fetchProductById(productId)
+    .then((data) => {
+      setProduct(data);
+
+      // fetch related products AFTER product loads
+      return fetchProducts().then((allProducts) => {
+        setRelatedProducts(
+          allProducts
+            .filter(
+              (p) => p.category === data.category && p.id !== productId
+            )
+            .slice(0, 3)
+        );
+      });
+    })
+    .catch(console.error)
+    .finally(() => {
+      setLoading(false);
     });
-  }, [productId, product?.category]);
+}, [productId]);
 
  // Set default selected color
   useEffect(() => {
@@ -67,20 +79,52 @@ export default function ProductDetailPage() {
   };
  
 
-  if (!product) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-serif text-[#2C2C2C] mb-4">
-            Product Not Found
-          </h1>
-          <Link href="/shop" className="text-[#8B6F47] hover:underline">
-            Return to Shop
-          </Link>
+// ✅ LOADING STATE (SHOW SKELETON)
+if (loading) {
+  return (
+    <main className="min-h-screen bg-[#FAF8F5]">
+      <div className="container mx-auto px-4 md:px-6 lg:px-8 py-16">
+        <div className="grid md:grid-cols-2 gap-12">
+          
+          {/* Image Skeleton */}
+          <div className="aspect-square bg-gray-200 animate-pulse rounded-sm" />
+
+          {/* Info Skeleton */}
+          <div className="space-y-6">
+            <div className="h-4 w-24 bg-gray-200 animate-pulse rounded" />
+            <div className="h-10 w-3/4 bg-gray-200 animate-pulse rounded" />
+            <div className="h-8 w-32 bg-gray-200 animate-pulse rounded" />
+
+            <div className="space-y-3">
+              <div className="h-4 bg-gray-200 animate-pulse rounded" />
+              <div className="h-4 bg-gray-200 animate-pulse rounded w-5/6" />
+              <div className="h-4 bg-gray-200 animate-pulse rounded w-2/3" />
+            </div>
+
+            <div className="h-12 bg-gray-200 animate-pulse rounded-sm w-full" />
+          </div>
         </div>
       </div>
-    );
-  }
+    </main>
+  );
+}
+
+// ❌ PRODUCT NOT FOUND (ONLY AFTER LOADING)
+if (!product) {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-[#FAF8F5]">
+      <div className="text-center">
+        <h1 className="text-2xl font-serif text-[#2C2C2C] mb-4">
+          Product Not Found
+        </h1>
+        <Link href="/shop" className="text-[#8B6F47] hover:underline">
+          Return to Shop
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 
  
 

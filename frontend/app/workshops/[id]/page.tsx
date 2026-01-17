@@ -6,7 +6,6 @@ import  { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-//import { getWorkshopById } from '@/data/workshops';
 // import { WorkshopCard } from '@/components/workshops/WorkshopCard';
 import { formatPrice, formatDate } from '@/lib/utils';
 import { workshops as staticWorkshops} from '@/data/workshops';
@@ -24,18 +23,39 @@ import { registerWorkshop } from '@/lib/api';
   const [workshop, setWorkshop] = useState<Workshop | null>(null);
 
   // 3️⃣ effect
-  useEffect(() => {
-    fetchWorkshopsClient().then((data) => {
+useEffect(() => {
+  let isMounted = true;
+
+  const loadWorkshop = async () => {
+    setLoading(true);
+
+    try {
+      const data = await fetchWorkshopsClient();
+
       if (Array.isArray(data)) {
-        const found = data.find((w: Workshop) => String(w.id) === workshopId);
-        if (found) {
-          setWorkshop(found);
-          return;
+        const found = data.find(
+          (w: Workshop) => String(w.id) === workshopId
+        );
+
+        if (isMounted) {
+          setWorkshop(found || null);
         }
       }
-      setWorkshop(null);
-    });
-  }, [workshopId]);
+    } catch (err) {
+      console.error(err);
+      if (isMounted) setWorkshop(null);
+    } finally {
+      if (isMounted) setLoading(false);
+    }
+  };
+
+  loadWorkshop();
+
+  return () => {
+    isMounted = false;
+  };
+}, [workshopId]);
+
   
   // Booking flow state
   const [bookingStep, setBookingStep] = useState<'details' | 'calendar' | 'form'|'experience' | 'review'>('details');
@@ -44,7 +64,8 @@ import { registerWorkshop } from '@/lib/api';
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState(false);
-
+ const [loading, setLoading] = useState(true);
+ 
   
   // Form state
   const [formData, setFormData] = useState({
@@ -55,6 +76,18 @@ import { registerWorkshop } from '@/lib/api';
     experienceLevel: 'beginner' as 'beginner' | 'intermediate' | 'advanced',
     specialRequests: '',
   });
+
+if (loading) {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-[#FAF8F5]">
+      <div className="text-center">
+        <div className="w-16 h-16 border-4 border-[#D4C5B0] border-t-[#8B6F47] rounded-full animate-spin mx-auto mb-4" />
+        <p className="text-[#666]">Loading workshop…</p>
+      </div>
+    </div>
+  );
+}
+
 
   if (!workshop) {
     return (
@@ -211,19 +244,63 @@ const handleConfirmBooking = async () => {
       workshop: Number(workshop.id),
       slot: Number(selectedSchedule.id),
       number_of_participants: formData.participants,
-      special_requests: formData.specialRequests || '',
+      special_requests: formData.specialRequests || "",
     };
 
-    const response = await registerWorkshop(payload);
+    // 1️⃣ Create workshop registration + PaymentOrder
+    const data = await registerWorkshop(payload);
 
-    console.log('Booking success:', response);
-    setBookingSuccess(true);
+    // 2️⃣ Open Razorpay
+    const options = {
+      key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+      amount: data.amount * 100, // paise
+      currency: "INR",
+      name: "Basho by Shivangi",
+      description: workshop.name,
+      order_id: data.razorpay_order_id,
+
+      handler: async function (response: any) {
+        // 3️⃣ Verify payment with backend
+        const verifyRes = await fetch(
+          "http://127.0.0.1:8000/api/orders/payment/verify/",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_signature: response.razorpay_signature,
+            }),
+          }
+        );
+
+        if (!verifyRes.ok) {
+          alert("Payment verification failed");
+          return;
+        }
+
+        // ✅ SUCCESS
+        setBookingSuccess(true);
+        alert("Payment successful! Booking confirmed 🎉");
+      },
+
+      prefill: {
+        name: formData.fullName,
+        email: formData.email,
+        contact: formData.phone,
+      },
+
+      theme: {
+        color: "#8B6F47",
+      },
+    };
+
+    const razorpay = new (window as any).Razorpay(options);
+    razorpay.open();
+
   } catch (err: any) {
     console.error(err);
-    alert(
-      err?.error ||
-      'Booking failed. Slot may be full or unavailable.'
-    );
+    alert("Booking or payment failed");
   } finally {
     setIsSubmitting(false);
   }
