@@ -7,7 +7,9 @@ import Navbar from "@/components/Navbar";
 import Script from "next/script";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { CartProvider } from "@/context/CartContext";
-import ClientShell from "@/components/Clientshell";
+
+/* Audio BGM Settings */
+
 import { MusicProvider } from "@/context/MusicContext"; 
 import MusicConsentModal from "@/components/MusicConsentModal"; 
 
@@ -53,6 +55,7 @@ export default function RootLayout({
       <body
         className={`${cinzel.variable} ${sourceSerif.variable} antialiased min-h-screen flex flex-col`}
       >
+
        {/* ============================== */}
         {/* 🔊 WRAP EVERYTHING HERE */}
         {/* ============================== */}
@@ -64,16 +67,14 @@ export default function RootLayout({
             clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!}
           >
             <CartProvider>
-              <ClientShell>
+               
                 <Navbar />
                 <main className="grow">{children}</main>
                 <Footer />
-              </ClientShell>
+              
             </CartProvider>
           </GoogleOAuthProvider>
         </MusicProvider>
-
-
         <Script
           src="https://checkout.razorpay.com/v1/checkout.js"
           strategy="afterInteractive"

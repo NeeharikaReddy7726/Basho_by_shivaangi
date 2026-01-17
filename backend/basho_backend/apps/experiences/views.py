@@ -13,7 +13,8 @@ import razorpay
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
- 
+from django.db.models import F
+
 
 
 from apps.orders.models import PaymentOrder

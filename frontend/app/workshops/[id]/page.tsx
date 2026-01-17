@@ -6,7 +6,6 @@ import  { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-//import { getWorkshopById } from '@/data/workshops';
 // import { WorkshopCard } from '@/components/workshops/WorkshopCard';
 import { formatPrice, formatDate } from '@/lib/utils';
 import { workshops as staticWorkshops} from '@/data/workshops';
@@ -24,18 +23,39 @@ import { registerWorkshop } from '@/lib/api';
   const [workshop, setWorkshop] = useState<Workshop | null>(null);
 
   // 3️⃣ effect
-  useEffect(() => {
-    fetchWorkshopsClient().then((data) => {
+useEffect(() => {
+  let isMounted = true;
+
+  const loadWorkshop = async () => {
+    setLoading(true);
+
+    try {
+      const data = await fetchWorkshopsClient();
+
       if (Array.isArray(data)) {
-        const found = data.find((w: Workshop) => String(w.id) === workshopId);
-        if (found) {
-          setWorkshop(found);
-          return;
+        const found = data.find(
+          (w: Workshop) => String(w.id) === workshopId
+        );
+
+        if (isMounted) {
+          setWorkshop(found || null);
         }
       }
-      setWorkshop(null);
-    });
-  }, [workshopId]);
+    } catch (err) {
+      console.error(err);
+      if (isMounted) setWorkshop(null);
+    } finally {
+      if (isMounted) setLoading(false);
+    }
+  };
+
+  loadWorkshop();
+
+  return () => {
+    isMounted = false;
+  };
+}, [workshopId]);
+
   
   // Booking flow state
   const [bookingStep, setBookingStep] = useState<'details' | 'calendar' | 'form'|'experience' | 'review'>('details');
@@ -44,7 +64,8 @@ import { registerWorkshop } from '@/lib/api';
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState(false);
-
+ const [loading, setLoading] = useState(true);
+ 
   
   // Form state
   const [formData, setFormData] = useState({
@@ -55,6 +76,18 @@ import { registerWorkshop } from '@/lib/api';
     experienceLevel: 'beginner' as 'beginner' | 'intermediate' | 'advanced',
     specialRequests: '',
   });
+
+if (loading) {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-[#FAF8F5]">
+      <div className="text-center">
+        <div className="w-16 h-16 border-4 border-[#D4C5B0] border-t-[#8B6F47] rounded-full animate-spin mx-auto mb-4" />
+        <p className="text-[#666]">Loading workshop…</p>
+      </div>
+    </div>
+  );
+}
+
 
   if (!workshop) {
     return (

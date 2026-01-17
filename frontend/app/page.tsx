@@ -4,7 +4,7 @@ import { useRef, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import AddReviewModal from "@/components/AddReviewModal";
 import ReviewSuccessModal from "@/components/ReviewSuccessModal";
-
+import ClientShell from "@/components/Clientshell";
 
 const philosophy = [
   {
@@ -66,6 +66,7 @@ export default function HomePage() {
 
   const [reviews, setReviews] = useState<any[]>([]);
   const [loadingReviews, setLoadingReviews] = useState(true);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
 
   const [showAddReview, setShowAddReview] = useState(false);
   const [showReviewSuccess, setShowReviewSuccess] = useState(false);
@@ -77,6 +78,28 @@ export default function HomePage() {
   const [showSuccess, setShowSuccess] = useState(false);
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  useEffect(() => {
+  const video = videoRef.current;
+  if (!video) return;
+
+  const observer = new IntersectionObserver(
+    ([entry]) => {
+      if (entry.isIntersecting) {
+        // ▶ play when visible
+        video.play().catch(() => {});
+      } else {
+        // 🔇 mute + optional pause when user leaves section
+        video.muted = true;
+        video.pause(); // remove this line if you want silent continue
+      }
+    },
+    { threshold: 0.4 }
+  );
+
+  observer.observe(video);
+
+  return () => observer.disconnect();
+}, []);
 
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
@@ -162,6 +185,7 @@ useEffect(() => {
 
 
   return (
+    <ClientShell> 
     <main>
     
       <div className="w-full overflow-x-hidden">
@@ -193,17 +217,6 @@ useEffect(() => {
         {showReviewSuccess && (
           <ReviewSuccessModal onClose={() => setShowReviewSuccess(false)} />
         )}
-
-
-
-
-
-
-
-  
-
-
-
       {/* ================= SEGMENT 1 : HERO ================= */}
       <section
         className="min-h-screen flex items-center justify-center text-center text-white relative"
@@ -250,85 +263,140 @@ useEffect(() => {
       </section>
 
       {/* ================= SEGMENT 2 : FEATURED PIECES ================= */}
-      <section
-        ref={segment2Ref}
 
-        className="bg-[#FAF8F2] py-24 px-6"
+<section
+  ref={segment2Ref}
+  className="relative overflow-hidden py-28 px-4 sm:px-6 bg-[#f7f2ec]"
+>
+  {/* 🌿 Animated pottery light background */}
+  <motion.div
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    className="absolute -top-40 -left-40 w-[30rem] h-[30rem] bg-[var(--basho-terracotta)]/25 rounded-full blur-[140px]"
+  />
+  <motion.div
+    animate={{ y: [0, -30, 0] }}
+    transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+    className="absolute top-1/3 -right-40 w-[28rem] h-[28rem] bg-[var(--basho-teal)]/20 rounded-full blur-[140px]"
+  />
+  <motion.div
+    animate={{ y: [0, 40, 0] }}
+    transition={{ duration: 16, repeat: Infinity, ease: "easeInOut" }}
+    className="absolute bottom-0 left-1/3 w-[26rem] h-[26rem] bg-[#d8b48a]/25 rounded-full blur-[140px]"
+  />
 
-      >
-        <div className="max-w-7xl mx-auto">
-          <div className="flex justify-between items-center mb-12">
-            <div>
-              <p className="tracking-widest text-sm text-[var(--basho-terracotta)] mb-2">
-                HANDCRAFTED COLLECTION
-              </p>
-              <h2 className="text-4xl text-[var(--basho-dark)]">
-                Featured Pieces
-              </h2>
-            </div>
+  <div className="relative max-w-7xl mx-auto">
 
-            {/* TODO: Replace # with collection page link */}
-            <a
-              href="/shop"
-              className="text-[var(--basho-terracotta)] hover:underline"
-            >
-              View all collection →
-            </a>
-          </div>
-
-       <div className="grid md:grid-cols-3 gap-8">
-  {[
-    {
-      img: "/image_aish/home/home_img_1.png",
-      name: "Earthglaze Storage Set",
-      price: "₹ 2,800",
-    },
-    {
-      img: "/image_aish/home/home_img_2.png",
-      name: "Sunfield Hand-Thrown Vase",
-      price: "₹ 2,500",
-    },
-    {
-      img: "/image_aish/home/home_img_3.png",
-      name: "Blush Heart Serving Bowls",
-      price: "₹ 1,000",
-    },
-  ].map((item, index) => (
-    <div
-      key={index}
-      className="bg-white rounded-xl shadow-sm overflow-hidden
-                 transition-transform duration-300
-                 hover:scale-105 hover:shadow-lg"
+    {/* 🌾 Header */}
+    <motion.div
+      initial={{ opacity: 0, y: 40 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.8 }}
+      className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 mb-16"
     >
-      <img
-        src={item.img}
-        alt={item.name}
-        className="h-95 w-full object-cover"
-      />
-
-      <div className="p-6">
-        <h3 className="text-xl text-[var(--basho-dark)] mb-2">
-          {item.name}
-        </h3>
-
-        <p className="text-[var(--basho-terracotta)] font-semibold mb-2">
-          {item.price}
+      <div>
+        <p className="tracking-[0.4em] text-xs text-[var(--basho-terracotta)] mb-3">
+          HANDCRAFTED COLLECTION
         </p>
+        <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif text-[var(--basho-dark)]">
+          Featured Pieces
+        </h2>
       </div>
-    </div>
-   
-  ))}
-</div>
 
+      <a
+        href="/shop"
+        className="text-sm tracking-wide text-[var(--basho-terracotta)]
+                   hover:underline self-start sm:self-auto"
+      >
+        View all collection →
+      </a>
+    </motion.div>
 
+    {/* 🏺 Product grid */}
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10">
+      {[
+        {
+          img: "/image_aish/home/home_img_1.png",
+          name: "Earthglaze Storage Set",
+          price: "₹ 2,800",
+        },
+        {
+          img: "/image_aish/home/home_img_2.png",
+          name: "Sunfield Hand-Thrown Vase",
+          price: "₹ 2,500",
+        },
+        {
+          img: "/image_aish/home/home_img_3.png",
+          name: "Blush Heart Serving Bowls",
+          price: "₹ 1,000",
+        },
+      ].map((item, index) => (
+        <motion.div
+          key={index}
+          initial={{ opacity: 0, y: 60 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.7, delay: index * 0.15 }}
+          className="group relative bg-white/70 backdrop-blur-xl 
+                     border border-[#e4d8c8] rounded-[2rem] 
+                     shadow-[0_30px_90px_-40px_rgba(0,0,0,0.35)]
+                     hover:shadow-[0_50px_140px_-50px_rgba(0,0,0,0.45)]
+                     transition overflow-hidden"
+        >
+          {/* glow hover */}
+          <div className="absolute inset-0 bg-gradient-to-br from-[var(--basho-terracotta)]/10 via-transparent to-[var(--basho-teal)]/10 opacity-0 group-hover:opacity-100 transition" />
 
-          <div className="mt-16 bg-white/60 border border-[var(--basho-divider)] rounded-xl p-8 text-center text-[var(--basho-dark)]">
-            Each piece is unique. Due to the handmade nature of our pottery,
-            slight variations in color, shape, and texture are natural and
-            intentional—a celebration of wabi-sabi.
+          {/* image */}
+          <div className="overflow-hidden">
+            <img
+              src={item.img}
+              alt={item.name}
+              className="h-[22rem] w-full object-cover 
+                         group-hover:scale-110 transition duration-700"
+            />
           </div>
-        </div>
-      </section>
+
+          {/* content */}
+          <div className="relative p-6 sm:p-7 text-center">
+            <h3 className="text-lg sm:text-xl font-serif text-[var(--basho-dark)] mb-2">
+              {item.name}
+            </h3>
+
+            <p className="text-[var(--basho-terracotta)] font-semibold tracking-wide">
+              {item.price}
+            </p>
+
+            <div className="mt-4 text-xs tracking-[0.35em] text-[var(--basho-muted)]">
+              HANDCRAFTED
+            </div>
+          </div>
+        </motion.div>
+      ))}
+    </div>
+
+    {/* 🌸 Wabi-sabi note */}
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.8 }}
+      className="mt-24 bg-white/70 backdrop-blur-xl border border-[#e4d8c8] 
+                 rounded-[2rem] p-10 sm:p-14 text-center 
+                 shadow-[0_30px_90px_-40px_rgba(0,0,0,0.3)]"
+    >
+      <p className="text-[var(--basho-dark)] font-serif text-lg sm:text-xl leading-relaxed">
+        Each piece is unique.  
+        <span className="block mt-3 text-sm sm:text-base text-[var(--basho-muted)]">
+          Due to the handmade nature of our pottery, slight variations in color,
+          shape, and texture are natural and intentional — a quiet celebration of
+          wabi-sabi.
+        </span>
+      </p>
+    </motion.div>
+
+  </div>
+</section>
 
 
       {/* ================= SEGMENT 4 : WORKSHOP ================= */}
@@ -438,8 +506,78 @@ useEffect(() => {
 
   </div>
 </section>
+{/* ================= VIDEO TESTIMONIAL ================= */}
+{/* ================= VIDEO TESTIMONIAL ================= */}
+<section className="relative overflow-hidden bg-gradient-to-br from-[#f7f3ee] via-[#f1ebe2] to-[#ede5d6] py-32 px-6">
 
-      {/* ================= SEGMENT 3 : PHILOSOPHY ================= */}
+  {/* Decorative clay glow circles */}
+  <div className="absolute -top-40 -left-40 w-[32rem] h-[32rem] bg-[#c97c5d]/25 rounded-full blur-[120px]" />
+  <div className="absolute bottom-0 -right-40 w-[30rem] h-[30rem] bg-[#8c5a3c]/25 rounded-full blur-[120px]" />
+
+  {/* Flex container: stacked on mobile, row on lg+ */}
+  <div className="relative max-w-6xl mx-auto flex flex-col lg:flex-row gap-12 items-start px-4">
+
+    {/* LEFT: TEXT */}
+    <motion.div 
+      className="flex-1 order-1 relative"
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.8 }}
+    >
+      {/* vertical clay line */}
+      <div className="absolute -left-6 top-2 h-20 w-[2px] bg-gradient-to-b from-transparent via-[var(--basho-terracotta)] to-transparent" />
+
+      <p className="tracking-[0.4em] text-xs text-[var(--basho-terracotta)] mb-6">
+        STUDIO EXPERIENCE
+      </p>
+
+      <h2 className="text-4xl md:text-5xl text-[var(--basho-dark)] font-serif mb-7 leading-tight">
+        Voices from Basho
+      </h2>
+
+      <p className="text-[var(--basho-teal)] leading-relaxed mb-10 max-w-lg text-lg">
+        Our visitors describe Basho as more than a pottery studio —  
+        it’s a space to slow down, reconnect, and create with intention.
+      </p>
+
+      <div className="relative pl-6 border-l border-[var(--basho-terracotta)]">
+        <span className="absolute -left-[5px] top-1.5 w-2.5 h-2.5 bg-[var(--basho-terracotta)] rounded-full" />
+        <p className="italic text-[var(--basho-terracotta)] text-lg leading-relaxed">
+          “The experience felt grounding, calm, and deeply personal.”
+        </p>
+      </div>
+    </motion.div>
+
+    {/* RIGHT: VIDEO */}
+    <motion.div 
+      className="flex-1 order-2 w-full aspect-video max-h-[400px] lg:max-h-[720px] rounded-2xl overflow-hidden bg-black shadow-[0_30px_90px_-20px_rgba(0,0,0,0.45)] group"
+      initial={{ opacity: 0, y: 40, scale: 0.95 }}
+      whileInView={{ opacity: 1, y: 0, scale: 1 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.8, delay: 0.2 }}
+    >
+      {/* soft cinematic glass overlay */}
+      <div className="absolute inset-0 bg-gradient-to-tr from-[#c97c5d]/10 via-transparent to-[#8c5a3c]/10 pointer-events-none z-10" />
+
+      <video
+        ref={videoRef}
+        src="/videos/basho Pottery Bliss.mp4"
+        muted
+        controls
+        playsInline
+        preload="none"
+        className="w-full h-full object-contain rounded-2xl"
+      />
+    </motion.div>
+
+  </div>
+
+  {/* Optional: subtle bottom decoration */}
+  <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[200px] h-[2px] bg-[var(--basho-terracotta)] rounded-full opacity-30" />
+</section>
+
+    {/* ================= SEGMENT 3 : PHILOSOPHY ================= */}
       <section
         ref={segment3Ref}
         className="bg-[#faf6ee] py-24 px-6"
@@ -599,110 +737,129 @@ useEffect(() => {
 
 
 
-<section className="bg-[#faf6ee] py-24 px-6">
-        <div className="max-w-7xl mx-auto text-center">
-          <p className="tracking-widest text-sm text-[var(--basho-terracotta)] mb-2">
-            CUSTOMER STORIES
-          </p>
+<section className="bg-gradient-to-b from-[#faf6ee] via-[#fdf8f2] to-[#f7f2ec] py-16 md:py-24 px-4 sm:px-6 lg:px-6">
+  <div className="max-w-7xl mx-auto text-center">
 
-          <div className="relative mb-16">
-  {/* Centered heading */}
-  <h2 className="text-4xl text-[var(--basho-dark)] text-center">
-    Voices of Our Community
-  </h2>
-
-  {/* Right-aligned Add Review button */}
-  {isLoggedIn && (
-    <button
-      onClick={() => setShowAddReview(true)}
-      className="absolute right-0 top-1/2 -translate-y-1/2
-                 flex items-center gap-2 text-[var(--basho-terracotta)]
-                 hover:underline"
-    >
-      <span className="text-xl font-bold">+</span>
-      Add Review
-    </button>
-  )}
-</div>
-
-
-<div className="grid md:grid-cols-2 gap-8">
-
-  {loadingReviews && (
-    <p className="text-center text-gray-500">Loading reviews...</p>
-  )}
-
-  {!loadingReviews && reviews.length === 0 && (
-    <p className="md:col-span-2 text-center text-gray-500">
-      No reviews yet. Be the first to share your experience.
+    {/* Header */}
+    <p className="tracking-widest text-xs sm:text-sm text-[var(--basho-terracotta)] mb-2">
+      CUSTOMER STORIES
     </p>
-  )}
 
-          {reviews.slice(0, 4).map((review, index) => {
-  const initials =
-    review.name
-      ?.split(" ")
-      .map((n: string) => n[0])
-      .slice(0, 2)
-      .join("")
-      .toUpperCase() || "?";
+    <div className="relative mb-12 sm:mb-16">
+      <h2 className="text-3xl sm:text-4xl md:text-5xl text-[var(--basho-dark)] font-serif leading-tight">
+        Voices of Our Community
+      </h2>
 
-  return (
-    <div
-      key={index}
-      className="bg-white/50 rounded-xl p-6 text-left shadow-sm"
-    >
-      {/* Header */}
-      <div className="flex items-center mb-4">
-        <div className="w-12 h-12 rounded-full bg-[var(--basho-terracotta)]
-                        flex items-center justify-center text-white
-                        font-bold text-xl">
-          {initials}
-        </div>
-
-        <div className="ml-4">
-          <h3 className="font-semibold text-[var(--basho-dark)]">
-            {review.name}
-          </h3>
-          <p className="text-sm text-[var(--basho-muted)]">
-            {review.city}
-          </p>
-        </div>
-      </div>
-
-      {/* ⭐ Rating (HALF STAR SUPPORTED) */}
-      <div className="flex mb-3">
-        {renderStars(review.rating)}
-      </div>
-
-      {/* Message */}
-      <p className="text-[var(--basho-teal)] leading-relaxed">
-        {review.message}
-      </p>
+      {/* Add Review Button */}
+      {isLoggedIn && (
+        <button
+          onClick={() => setShowAddReview(true)}
+          className="
+            absolute right-0 top-1/2 -translate-y-1/2
+            flex items-center gap-2 text-[var(--basho-terracotta)]
+            font-semibold hover:underline
+            sm:text-base text-sm
+            max-sm:static max-sm:mt-6 max-sm:translate-y-0 max-sm:mx-auto
+          "
+        >
+          <span className="text-xl sm:text-2xl font-bold">+</span>
+          Add Review
+        </button>
+      )}
     </div>
-  );
-})}
 
+    {/* Cards Grid */}
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-6 sm:gap-8">
+      {loadingReviews && (
+        <p className="text-center text-gray-500 col-span-full">Loading reviews...</p>
+      )}
 
-          </div>
-          {/* ✅ ADD BUTTON RIGHT HERE */}
-{reviews.length > 4 && (
-  <div className="mt-12 text-center">
-    <a
-      href="/review"
-      className="inline-block px-8 py-3 rounded-full
-                 border border-[var(--basho-terracotta)]
-                 text-[var(--basho-terracotta)]
-                 hover:bg-[var(--basho-terracotta)]
-                 hover:text-white
-                 transition"
-    >
-      View all reviews →
-    </a>
+      {!loadingReviews && reviews.length === 0 && (
+        <p className="text-center text-gray-500 col-span-full">
+          No reviews yet. Be the first to share your experience.
+        </p>
+      )}
+
+      {reviews.slice(0, 4).map((review, index) => {
+        const initials =
+          review.name
+            ?.split(" ")
+            .map((n: string) => n[0])
+            .slice(0, 2)
+            .join("")
+            .toUpperCase() || "?";
+
+        return (
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: index * 0.15 }}
+            className="relative bg-white/60 rounded-3xl p-5 sm:p-6 shadow-lg hover:shadow-2xl hover:scale-105 transition-transform duration-500 border-l-4 border-gradient-to-b from-[var(--basho-terracotta)] via-[var(--basho-teal)] to-[var(--basho-terracotta)]"
+          >
+            {/* Header */}
+            <div className="flex items-center mb-3 sm:mb-4 gap-3 sm:gap-4">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[var(--basho-terracotta)] text-white font-bold text-lg sm:text-xl flex items-center justify-center shadow-md">
+                {initials}
+              </div>
+              <div className="text-left">
+                <h3 className="text-[var(--basho-dark)] font-semibold text-base sm:text-lg md:text-xl">
+                  {review.name}
+                </h3>
+                <p className="text-[var(--basho-muted)] text-xs sm:text-sm md:text-base">
+                  {review.city}
+                </p>
+              </div>
+            </div>
+
+            {/* Star Ratings */}
+            <div className="flex mb-3 sm:mb-4">
+              {Array.from({ length: 5 }, (_, i) => {
+                const filled = review.rating >= i + 1;
+                const half = review.rating >= i + 0.5 && review.rating < i + 1;
+                return (
+                  <span
+                    key={i}
+                    className={`text-sm sm:text-base md:text-lg transition-colors duration-300 ${
+                      filled
+                        ? "text-yellow-400"
+                        : half
+                        ? "text-yellow-300/70"
+                        : "text-gray-300"
+                    }`}
+                  >
+                    ★
+                  </span>
+                );
+              })}
+            </div>
+
+            {/* Message */}
+            <p className="text-[var(--basho-teal)] leading-relaxed text-sm sm:text-base md:text-base">
+              {review.message}
+            </p>
+
+            {/* Decorative bottom accent */}
+            <div className="absolute bottom-0 left-0 w-full h-1 rounded-full bg-gradient-to-r from-[var(--basho-terracotta)] via-[var(--basho-teal)] to-[var(--basho-terracotta)] opacity-40" />
+          </motion.div>
+        );
+      })}
+    </div>
+
+    {/* View All Button */}
+    {reviews.length > 4 && (
+      <div className="mt-8 sm:mt-12 text-center">
+        <a
+          href="/review"
+          className="inline-block px-6 sm:px-8 py-2 sm:py-3 rounded-full border border-[var(--basho-terracotta)] text-[var(--basho-terracotta)] font-semibold hover:bg-[var(--basho-terracotta)] hover:text-white transition-all duration-300 text-sm sm:text-base"
+        >
+          View all reviews →
+        </a>
+      </div>
+    )}
   </div>
-)}
-        </div>
-      </section>
+</section>
 
 
 
@@ -710,5 +867,6 @@ useEffect(() => {
     </div>
     
      </main>
+      </ClientShell>
   );
 }

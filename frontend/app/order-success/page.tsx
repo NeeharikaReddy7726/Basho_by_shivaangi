@@ -2,62 +2,111 @@
 
 import Link from "next/link";
 import { CheckCircle } from "lucide-react";
+import { motion } from "framer-motion";
 
 export default function OrderSuccessPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#f5f5dc] px-4">
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-8 text-center border border-[var(--basho-brown)]/20">
-        
+    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-[#f6f1e7] via-[#f5f0e6] to-[#ede3d2] px-4">
+
+      {/* Ambient clay blobs */}
+      <div className="absolute -top-32 -left-32 w-96 h-96 bg-[#c97c5d]/20 rounded-full blur-3xl" />
+      <div className="absolute top-1/3 -right-32 w-96 h-96 bg-[#8c5a3c]/20 rounded-full blur-3xl" />
+      <div className="absolute bottom-0 left-1/3 w-96 h-96 bg-[#e2b091]/30 rounded-full blur-3xl" />
+
+      {/* Floating dust particles */}
+      {[...Array(12)].map((_, i) => (
+        <motion.span
+          key={i}
+          className="absolute w-1.5 h-1.5 rounded-full bg-[#8c5a3c]/30"
+          initial={{ opacity: 0, y: 0 }}
+          animate={{
+            opacity: [0, 1, 0],
+            y: [0, -120 - i * 20],
+            x: [0, i % 2 === 0 ? 40 : -40],
+          }}
+          transition={{
+            duration: 6 + i,
+            repeat: Infinity,
+            delay: i * 0.4,
+            ease: "easeInOut",
+          }}
+          style={{
+            left: `${10 + i * 7}%`,
+            bottom: "10%",
+          }}
+        />
+      ))}
+
+      {/* Card */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9, y: 40 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 0.9, ease: "easeOut" }}
+        className="relative max-w-md w-full bg-white/90 backdrop-blur-xl rounded-3xl shadow-[0_30px_80px_-20px_rgba(0,0,0,0.25)] p-8 text-center border border-[#8c5a3c]/20"
+      >
+
+        {/* Golden halo */}
+        <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-[#e2b091]/20 via-transparent to-[#8c5a3c]/20 pointer-events-none" />
+
         {/* Icon */}
-        <div className="flex justify-center mb-4">
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ delay: 0.4, type: "spring", stiffness: 120 }}
+          className="relative flex justify-center mb-4"
+        >
+          <div className="absolute w-24 h-24 rounded-full bg-[#e2b091]/30 blur-xl" />
           <CheckCircle
-            size={64}
-            className="text-[var(--basho-terracotta)]"
+            size={72}
+            className="relative text-[#8c5a3c]"
           />
-        </div>
+        </motion.div>
 
         {/* Heading */}
-        <h1 className="text-2xl font-semibold text-[var(--basho-dark)] mb-2">
-          Order Placed Successfully 🌿
+        <h1 className="text-3xl font-serif text-[#563a13] mb-2 tracking-wide">
+          Your piece has found its home
         </h1>
 
         {/* Message */}
-        <p className="text-sm text-[var(--basho-dark)]/80 mb-4">
-          Thank you for supporting handcrafted ceramics.
-          Your payment was received and your order is being prepared with care.
+        <p className="text-sm text-[#4A5F55] leading-relaxed mb-4">
+          Thank you for welcoming handcrafted ceramics into your space.
+          Your order has been received and will soon take shape in our studio.
         </p>
 
         {/* Divider */}
-        <div className="h-px bg-[var(--basho-brown)]/20 my-4" />
+        <div className="h-px bg-gradient-to-r from-transparent via-[#8c5a3c]/30 to-transparent my-5" />
 
         {/* Info */}
-        <p className="text-xs text-[var(--basho-dark)]/70 mb-6">
-          You will receive an email confirmation once the order is verified.
-          Our artisans will begin crafting your piece shortly.
+        <p className="text-xs text-[#4A5F55]/80 mb-7 leading-relaxed">
+          A confirmation email will arrive shortly.  
+          Each piece is shaped, fired, and packed by hand — embracing
+          the beauty of imperfection.
         </p>
 
         {/* Actions */}
         <div className="flex flex-col gap-3">
           <Link
             href="/shop"
-            className="w-full py-2 rounded-lg bg-[var(--basho-brown)] text-white text-sm hover:bg-[var(--basho-terracotta)] transition"
+            className="w-full py-3 rounded-xl bg-gradient-to-r from-[#8c5a3c] to-[#c97c5d] text-white text-sm font-medium tracking-wide hover:scale-[1.02] transition-transform shadow-md"
           >
-            Continue Shopping
+            Explore More Creations
           </Link>
 
           <Link
             href="/"
-            className="w-full py-2 rounded-lg border border-[var(--basho-brown)] text-[var(--basho-brown)] text-sm hover:bg-[var(--basho-sand)] transition"
+            className="w-full py-3 rounded-xl border border-[#8c5a3c]/40 text-[#8c5a3c] text-sm hover:bg-[#f5efe6] transition"
           >
-            Go to Home
+            Return to Home
           </Link>
         </div>
 
         {/* Footer note */}
-        <p className="mt-6 text-xs text-[var(--basho-dark)]/60">
-          – Basho by Shivangi
+        <p className="mt-6 text-xs italic text-[#4A5F55]/70">
+          — crafted slowly, fired with care
+          <br />
+          <span className="not-italic font-medium">Basho by Shivangi</span>
         </p>
-      </div>
+      </motion.div>
     </div>
   );
 }
