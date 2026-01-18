@@ -40,14 +40,19 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
+
+    "django.contrib.messages",
+
+    'cloudinary_storage',
+    "django.contrib.staticfiles",
+    'cloudinary',
+    
     "jazzmin",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
-    "django.contrib.messages",
-    "django.contrib.staticfiles",
- 
+    
     "rest_framework",
     'corsheaders',
 
@@ -60,6 +65,13 @@ INSTALLED_APPS = [
     "apps.main.apps.MainConfig",
     "rest_framework.authtoken",
 ]
+
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME'),
+    'API_KEY': os.getenv('CLOUDINARY_API_KEY'),
+    'API_SECRET': os.getenv('CLOUDINARY_API_SECRET'),
+}
+
 JAZZMIN_SETTINGS = {
     # Admin titles
     "site_title": "Basho Admin",
@@ -298,6 +310,7 @@ SESSION_COOKIE_SAMESITE = "Lax"
 SESSION_COOKIE_SECURE = False  # True only in HTTPS
  
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 # Allows the app to be viewed inside the Hugging Face "App" tab
 X_FRAME_OPTIONS = 'ALLOWALL'
