@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.exceptions import ValidationError
+from django.conf import settings
 
 class Experience(models.Model):
     title = models.CharField(max_length=200)
@@ -73,13 +74,21 @@ class Booking(models.Model):
     )
 
     slot = models.ForeignKey(
-    ExperienceSlot,
-    on_delete=models.PROTECT,
-    related_name="bookings",
-    null=True,
-    blank=True,
-)
+        ExperienceSlot,
+        on_delete=models.PROTECT,
+        related_name="bookings",
+        null=True,
+        blank=True,
+    )
 
+    # ✅ ADD THIS (new)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="experience_bookings"
+    )
 
     full_name = models.CharField(max_length=100)
     phone = models.CharField(max_length=15)
@@ -96,7 +105,6 @@ class Booking(models.Model):
 
     payment_amount = models.PositiveIntegerField()
 
-    # 🔗 LINK TO ORDERS APP
     payment_order = models.OneToOneField(
         "orders.PaymentOrder",
         on_delete=models.SET_NULL,
@@ -109,7 +117,7 @@ class Booking(models.Model):
 
     def __str__(self):
         return f"{self.full_name} - {self.experience.title}"
-   
+
 class StudioBooking(models.Model):
     full_name = models.CharField(max_length=100)
     phone = models.CharField(max_length=15)
@@ -227,6 +235,15 @@ class WorkshopRegistration(models.Model):
         related_name="registrations"
     )
 
+    # ✅ ADD THIS (new)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="workshop_registrations"
+    )
+
     name = models.CharField(max_length=100)
     email = models.EmailField()
     phone = models.CharField(max_length=15)
@@ -241,7 +258,6 @@ class WorkshopRegistration(models.Model):
         default="pending"
     )
 
-    # 🔗 LINK TO ORDERS APP
     payment_order = models.OneToOneField(
         "orders.PaymentOrder",
         on_delete=models.SET_NULL,
