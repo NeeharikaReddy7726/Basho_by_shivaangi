@@ -1,30 +1,34 @@
-.section { display: flex; gap: 4rem; align-items: stretch; margin: 5rem 0; padding: 3.5rem; border-radius: 28px; background: #faf7f3}
+/* =============================
+   EXPERIENCE SECTION
+============================= */
+
+.section {
+  display: flex;
+  gap: 4rem;
+  align-items: stretch;
+  margin: 5rem 0;
+  padding: 3.5rem;
+  border-radius: 28px;
+  background: #faf7f3;
+}
+
 .reverse {
   flex-direction: row-reverse;
 }
 
-
 .imageWrapper {
-  /*width: 100%;
-  height: 420px;
-  border-radius: 24px;
-  overflow: hidden;*/
   flex: 1;
   display: flex;
 }
 
 .imageWrapper img {
-    /*width: 520px;
-    height: auto;
-    object-fit: cover;*/
-    width: 100%;
-  height: 100%;        /* 👈 fills text height */
-  object-fit: cover;  /* 👈 crops nicely */
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   border-radius: 28px;
 }
 
 .content {
-  /*max-width: 520px;*/
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -36,7 +40,6 @@
   font-family: var(--font-display);
   letter-spacing: 0.15em;
   font-size: 0.85rem;
-  display: block;
 }
 
 .title {
@@ -63,129 +66,266 @@
   font-weight: 600;
 }
 
-.includes {
-  background: #f7f3ee;
-  padding: 1.2rem;
-  border-radius: 16px;
-  color: #3a2f2a;
-}
-
-.includes h4 {
-  margin-bottom: 0.6rem;
-  font-size: 0.9rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--basho-dark);
-}
-
-.includes ul {
-  padding-left: 1.2rem;
-}
-
-.includes li {
-  margin-bottom: 0.3rem;
-  color: #4a3b35;
-}
+/* BOOK BUTTON */
 
 .button {
   margin-top: 1.8rem;
-  background: var(--basho-brown);
+  align-self: flex-start;
+  background: linear-gradient(135deg, #6b4a32, #8b6f47);
   color: white;
-  padding: 0.9rem 2rem;
+  padding: 0.9rem 2.2rem;
   border-radius: 999px;
   border: none;
   font-family: var(--font-display);
+  letter-spacing: 0.12em;
+  font-size: 0.75rem;
   cursor: pointer;
+  box-shadow: 0 10px 26px rgba(0,0,0,0.18);
+  transition: 0.3s ease;
 }
-@media (max-width: 900px) {
-  .section {
-    flex-direction: column;
-    padding: 2rem;
-  }
 
-  .imageWrapper img {
-    height: auto;
-    width: 100%;
-  }
+.button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 36px rgba(0,0,0,0.25);
 }
-/* MODAL */
+
+/* =============================
+   MODAL OVERLAY
+============================= */
+
 .modalOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: rgba(38, 26, 18, 0.55);
+  backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  color: brown
+  padding: 1rem;
 }
 
+/* =============================
+   MODAL CARD
+============================= */
+
 .modal {
-  background: #fff;
-  padding: 2rem;
+  background: linear-gradient(180deg, #fff, #faf6f2);
+  padding: 1.4rem;
   border-radius: 24px;
-  width: 90%;
+  width: 100%;
   max-width: 420px;
+  max-height: 85vh;
+  overflow-y: auto;
   position: relative;
-  animation: fadeUp 0.4s ease;
-  color: brown;
+  animation: fadeUp 0.35s ease;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.3);
 }
 
 @keyframes fadeUp {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(16px) scale(0.97);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 }
 
 .close {
   position: absolute;
-  top: 14px;
-  left: 16px;
-  background: none;
+  top: 12px;
+  right: 14px;
+  background: #f3ece6;
   border: none;
+  border-radius: 50%;
+  width: 34px;
+  height: 34px;
   font-size: 1.1rem;
   cursor: pointer;
+  color: #6b4a32;
 }
 
 .modalTitle {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   text-align: center;
-  color: brown;
+  font-family: var(--font-display);
+  letter-spacing: 0.12em;
+  font-size: 1.05rem;
+  color: var(--basho-brown);
 }
+
+/* =============================
+   FORM
+============================= */
 
 .form {
   display: flex;
   flex-direction: column;
-  gap: 0.9rem;
-  color: brown;
+  gap: 0.55rem;
 }
 
 .form input,
 .form select {
-  padding: 0.75rem 1rem;
+  padding: 0.55rem 0.85rem;
   border-radius: 12px;
-  border: 1px solid #ddd;
-  font-size: 0.9rem;
-  color: brown
+  font-size: 0.82rem;
+  border: 1px solid #e6d9cd;
+  background: #fff;
+  color: #4a3223;
 }
 
-.submit {
-  margin-top: 1rem;
-  background: var(--basho-brown, #5a3e2b);
-  color: #fff;
+.form input:focus,
+.form select:focus {
+  outline: none;
+  border-color: #8b6f47;
+  box-shadow: 0 0 0 2px rgba(139,111,71,0.15);
+}
+
+/* =============================
+   CALENDAR
+============================= */
+
+.calendarBox {
+  background: #faf6f2;
+  border-radius: 16px;
+  padding: 0.6rem;
+  border: 1px solid #eadfd4;
+}
+
+.calendarHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.6rem;
+  font-family: var(--font-display);
+  color: #6b4a32;
+  font-size: 0.85rem;
+}
+
+.calendarHeader button {
+  background: #efe5dc;
   border: none;
-  border-radius: 999px;
-  padding: 0.8rem;
+  border-radius: 10px;
+  width: 30px;
+  height: 30px;
   cursor: pointer;
-  transition: all 0.25s ease;
+  font-size: 1rem;
+  color: #6b4a32;
+}
+
+.weekGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  font-size: 0.65rem;
+  text-align: center;
+  margin-bottom: 0.3rem;
+  color: #9b8579;
+}
+
+.dayGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.35rem;
+}
+
+.day {
+  aspect-ratio: 1/1;
+  border-radius: 50%;
+  border: none;
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.available {
+  background: #fff;
+  color: #4a3223;
+  border: 1px solid #eadfd4;
+}
+
+.available:hover {
+  background: #f1e6db;
+}
+
+.disabled {
+  color: #c8b8ae;
+  cursor: not-allowed;
+}
+
+.selected {
+  background: linear-gradient(135deg, #6b4a32, #8b6f47);
+  color: white;
+  transform: scale(1.07);
+}
+
+/* =============================
+   BOTTOM BOOKING CARD
+============================= */
+
+.bookingBottom {
+  margin-top: 0.7rem;
+  padding: 0.75rem;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 8px 22px rgba(0,0,0,0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+/* =============================
+   SUBMIT BUTTON
+============================= */
+
+.submit {
+  width: 100%;
+  margin-top: 0.2rem;
+  padding: 0.7rem;
+  border-radius: 12px;
+  border: none;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: linear-gradient(135deg, #9c6b3d, #6f4522);
+  color: white;
+  cursor: pointer;
+  transition: 0.25s ease;
 }
 
 .submit:hover {
-  background: #4a3223;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(0,0,0,0.2);
 }
 
+.submit:disabled {
+  background: #d8c9b8;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* =============================
+   RESPONSIVE
+============================= */
+
+@media (max-width: 900px) {
+  .section {
+    flex-direction: column;
+    padding: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .modal {
+    max-width: 100%;
+    border-radius: 18px;
+  }
+
+  .title {
+    font-size: 2.1rem;
+  }
+
+  .calendarBox {
+    padding: 0.5rem;
+  }
+}

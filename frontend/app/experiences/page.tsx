@@ -33,7 +33,7 @@ export default function ExperiencesPage() {
 
 
   useEffect(() => {
-    fetch("${VAPI_BASE}/api/experiences/")
+    fetch(`${VAPI_BASE}/api/experiences/`)
       .then((res) => res.json())
       .then((data) => {
         setExperiences(data);

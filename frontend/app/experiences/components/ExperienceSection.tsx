@@ -67,32 +67,81 @@ export default function ExperienceSection({
   const [submitting, setSubmitting] = useState(false);
   const [availableDates, setAvailableDates] = useState<string[]>([]);
  
- 
+ const [currentMonth, setCurrentMonth] = useState(new Date());
+
+const prevMonth = () => {
+  const prev = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1);
+  if (prev >= new Date(new Date().getFullYear(), new Date().getMonth(), 1)) {
+    setCurrentMonth(prev);
+  }
+};
+
+const nextMonth = () => {
+  setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
+};
+
+const generateCalendarDays = () => {
+  const year = currentMonth.getFullYear();
+  const month = currentMonth.getMonth();
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const daysInPrevMonth = new Date(year, month, 0).getDate();
+
+  const days:any[] = [];
+
+  for (let i = firstDay - 1; i >= 0; i--) {
+    days.push({ day: daysInPrevMonth - i, isAvailable: false, date: null });
+  }
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateString = `${year}-${String(month + 1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    days.push({
+      day: d,
+      isAvailable: availableDates.includes(dateString),
+      date: dateString,
+    });
+  }
+
+  while (days.length < 42) {
+    days.push({ day: "", isAvailable: false, date: null });
+  }
+
+  return days;
+};
+
+const calendarDays = generateCalendarDays();
+
   // const [step, setStep] = useState<"form" | "confirmed">("form");
 
   /* =====================
      FETCH SLOTS
   ===================== */
-  useEffect(() => {
+useEffect(() => {
   if (!open) return;
 
-  fetch(
-    `${VAPI_BASE}/api/experiences/${experienceId}/available-dates/`
-  )
+  fetch(`${VAPI_BASE}/api/experiences/${experienceId}/available-dates/`)
     .then((res) => res.json())
-    .then(setAvailableDates)
+    .then((dates) => {
+      setAvailableDates(dates);
+
+      if (dates.length > 0) {
+        const first = new Date(dates[0]);
+        setCurrentMonth(new Date(first.getFullYear(), first.getMonth(), 1));
+      }
+    })
     .catch(() => setAvailableDates([]));
 }, [open, experienceId]);
 
-  useEffect(() => {
+useEffect(() => {
   if (!date) {
     setSlots([]);
+    setSlotId(null);   // ✅ reset selected slot
     return;
   }
 
-  fetch(
-    `${VAPI_BASE}/api/experiences/${experienceId}/slots-by-date/?date=${date}`
-  )
+  setSlotId(null);     // ✅ reset when date changes
+
+  fetch(`${VAPI_BASE}/api/experiences/${experienceId}/slots-by-date/?date=${date}`)
     .then((res) => res.json())
     .then(setSlots)
     .catch(() => setSlots([]));
@@ -107,9 +156,15 @@ export default function ExperienceSection({
     // ✅ PREVENT DOUBLE SUBMIT
     if (submitting) return;
     setSubmitting(true);
+    if (!slotId) {
+  alert("Please select a time slot");
+  setSubmitting(false);
+  return;
+}
 
     try {
-      const res = await fetch("${VAPI_BASE}/api/experiences/book/", {
+      const res = await fetch(`${VAPI_BASE}/api/experiences/book/`,
+ {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -165,7 +220,8 @@ export default function ExperienceSection({
           );
 
 if (!verifyRes.ok) {
-  await fetch("${VAPI_BASE}/api/experiences/release-slot/", {
+  await fetch(`${VAPI_BASE}/api/experiences/release-slot/`, {
+
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -322,17 +378,45 @@ if (!verifyRes.ok) {
                   onChange={(e) => setEmail(e.target.value)}
                 />
 
-                <input
-                  type="date"
-                  required
-                  value={date}
-                  onChange={(e) => {
-                    setDate(e.target.value);
-                    setSlotId(null);
-                  }}
-                  min={availableDates[0]}
-                  className={styles.input}
-                />
+                <div>
+  <label>Select Date</label>
+
+  <div className={styles.calendarBox}>
+
+    <div className={styles.calendarHeader}>
+      <button type="button" onClick={prevMonth}>‹</button>
+      <span>
+        {currentMonth.toLocaleString("default", { month: "long", year: "numeric" })}
+      </span>
+      <button type="button" onClick={nextMonth}>›</button>
+    </div>
+
+    <div className={styles.weekGrid}>
+      {["Su","Mo","Tu","We","Th","Fr","Sa"].map(d => (
+        <div key={d}>{d}</div>
+      ))}
+    </div>
+
+    <div className={styles.dayGrid}>
+      {calendarDays.map((day, i) => (
+        <button
+          type="button"
+          key={i}
+          disabled={!day.isAvailable}
+          onClick={() => day.isAvailable && setDate(day.date)}
+          className={`${styles.day}
+            ${day.isAvailable ? styles.available : styles.disabled}
+            ${date === day.date ? styles.selected : ""}
+          `}
+        >
+          {day.day}
+        </button>
+      ))}
+    </div>
+
+  </div>
+</div>
+
 
 
                 <input
@@ -342,9 +426,10 @@ if (!verifyRes.ok) {
                   value={participants}
                   onChange={(e) => setParticipants(Number(e.target.value))}
                 />
-
+                     <div className={styles.bookingBottom}>
                 <select
                   required
+                  disabled={!date}
                   value={slotId ?? ""}
                   onChange={(e) => setSlotId(Number(e.target.value))}
                 >
@@ -379,6 +464,8 @@ if (!verifyRes.ok) {
                 >
                   {submitting ? "Processing..." : "Proceed to Payment"}
                 </button>
+                </div>
+
               </form>
             </>
           </div>

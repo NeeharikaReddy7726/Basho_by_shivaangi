@@ -14,7 +14,7 @@ export default function MyWorkshops() {
     const token = localStorage.getItem("accessToken");
     if (!token) return router.replace("/login?next=/profile/workshops");
 
-    fetch(`${VAPI_BASE}/api/workshops/my-workshops/`, {
+    fetch(`${VAPI_BASE}/api/experiences/my-workshops/`, {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => res.json())
