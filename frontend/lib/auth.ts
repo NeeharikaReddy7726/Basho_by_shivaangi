@@ -26,7 +26,7 @@ export async function refreshAccessToken() {
   const refresh = localStorage.getItem("refreshToken");
   if (!refresh) return null;
 
-  const res = await fetch("${VAPI_BASE}/api/token/refresh/", {
+  const res = await fetch(`${VAPI_BASE}/api/token/refresh/`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ refresh }),

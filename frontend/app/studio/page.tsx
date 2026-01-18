@@ -65,7 +65,7 @@ export default function StudioPage() {
     };
 
     try {
-      const res = await fetch("${VAPI_BASE}/api/experiences/studio-book/", {
+      const res = await fetch(`${VAPI_BASE}/api/experiences/studio-book/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),

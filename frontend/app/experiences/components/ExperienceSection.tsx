@@ -263,7 +263,7 @@ if (!verifyRes.ok) {
         // 👇 USER CLOSES RAZORPAY WITHOUT PAYING
       modal: {
         ondismiss: async () => {
-          await fetch("${VAPI_BASE}/api/experiences/release-slot/", {
+          await fetch(`${VAPI_BASE}/api/experiences/release-slot/`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({

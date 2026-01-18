@@ -10,7 +10,7 @@ export default function AllReviewsPage() {
   useEffect(() => {
     async function fetchReviews() {
       try {
-        const res = await fetch("${VAPI_BASE}/api/reviews/", {
+        const res = await fetch(`${VAPI_BASE}/api/reviews/`, {
           cache: "no-store",
         });
 

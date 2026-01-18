@@ -6,6 +6,8 @@ import AddReviewModal from "@/components/AddReviewModal";
 import ReviewSuccessModal from "@/components/ReviewSuccessModal";
 import ClientShell from "@/components/Clientshell";
 
+import { VAPI_BASE } from "@/lib/api";
+
 const philosophy = [
   {
     title: "Wabi-Sabi (侘寂)",
@@ -111,7 +113,7 @@ export default function HomePage() {
 useEffect(() => {
   async function fetchReviews() {
     try {
-      const res = await fetch("${VAPI_BASE}/api/reviews/", {
+      const res = await fetch(`${VAPI_BASE}/api/reviews/`, {
   cache: "no-store",
 });
 

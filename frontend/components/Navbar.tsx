@@ -46,7 +46,7 @@ const refreshAuth = async () => {
   try {
   let token = localStorage.getItem("accessToken");
 
-  let res = await fetch("${VAPI_BASE}/api/accounts/me/", {
+  let res = await fetch(`${VAPI_BASE}/api/accounts/me/`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -56,7 +56,7 @@ const refreshAuth = async () => {
     token = await refreshAccessToken();
     if (!token) throw new Error("Auth failed");
 
-    res = await fetch("${VAPI_BASE}/api/accounts/me/", {
+    res = await fetch(`${VAPI_BASE}/api/accounts/me/`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -167,7 +167,7 @@ const [mobileCartOpen, setMobileCartOpen] = useState(false);
   }
 
   const res = await fetch(
-    "${VAPI_BASE}/api/accounts/change-username/",
+    `${VAPI_BASE}/api/accounts/change-username/`,
     {
       method: "POST",
       headers: {
@@ -205,7 +205,7 @@ const saveAvatar = async (url: string) => {
 
   try {
     const res = await fetch(
-      "${VAPI_BASE}/api/accounts/set-avatar/",
+      `${VAPI_BASE}/api/accounts/set-avatar/`,
       {
         method: "POST",
         headers: {

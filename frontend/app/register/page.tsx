@@ -325,7 +325,7 @@ useEffect(() => {
           {/* Logo */}
           <div className="flex justify-center mb-8">
             <Image
-              src="/image_aish/basho_logo.jpg"
+              src="/Images/branding/logo.jpg"
               alt="Basho by Shivangi"
               width={180}
               height={60}

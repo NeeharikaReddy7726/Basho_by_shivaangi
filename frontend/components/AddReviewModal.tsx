@@ -42,7 +42,7 @@ const headers: any = {
 };
 
 
-const res = await fetch("${VAPI_BASE}/api/reviews/create/", {
+const res = await fetch(`${VAPI_BASE}/api/reviews/create/`, {
   method: "POST",
   cache: "no-store",
   headers: {
