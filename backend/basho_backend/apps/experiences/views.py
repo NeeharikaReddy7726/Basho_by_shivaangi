@@ -69,8 +69,9 @@ class CreateBookingView(APIView):
 
             booking = serializer.save(
                 status="pending",
-                payment_amount=experience.price
-            )
+                payment_amount=experience.price,
+                user=request.user if request.user.is_authenticated else None)
+
 
             # ✅ Reserve seats
             slot.booked_slots += people
@@ -364,7 +365,10 @@ class CreateWorkshopRegistrationView(APIView):
         serializer = WorkshopRegistrationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        registration = serializer.save(status="pending")
+        registration = serializer.save(
+        status="pending",
+        user=request.user if request.user.is_authenticated else None)
+
 
         amount = (
             registration.workshop.price * registration.number_of_participants
